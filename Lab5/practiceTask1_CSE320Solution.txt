@@ -1,0 +1,33 @@
+Solution:
+
+
+Question 1: Target MAC of ARP query packet is Broadcast MAC address.
+
+Question 2: It will simply drop it, because the ARP request is not made of it.
+
+Question 3: The right sequence is below.
+
+PC0 sends ARP to know MAC of DNS Server.
+DNS server replies ARP query of PC0
+PC0 sends DNS query of www.facebook.com to DNS server
+DNS server replies DNS query with IP of www.facebook.com
+PC0 sends ARP query to know the MAC of Facebook server
+Facebook server replies ARP query of PC0 with its MAC
+PC0 sends TCP handshake packet for establishing TCP communication
+PC0 sends HTTP packet.
+Facebook server replies HTTP packet.
+Facebook webpage appears in the web browser of PC0
+PC0 sends TCP packet to facebook server for closing communication
+Facebook server sends TCP packet to PC0 confirming that it has closed the TCP communication 
+
+
+Question 4: Destination IP is the IP of Facebook Server. Destination MAC is the MAC of fa0/0 port of BRAC router. Note that writing the port number is essential as router has multiple ports.
+
+
+
+Question 5:
+a. SMTP is working fine. ---- FALSE, if SMTP is fine, you can send mails!
+b. There may be some problems with SMTP. ----- TRUE.
+c. POP3 is working fine. -------- TRUE, that's why you can receive mails.
+d. Password for POP3 authentication is given wrong. ------ FALSE, POP3 is working fine. So password (if really needed!) must be ok!
+e. Physical link between your PC and gmail server has been lost. That’s why you cannot send e-mails. ----- FALSE. If the link got down, you cannot send or receive, all communication will fail!

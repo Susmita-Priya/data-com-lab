@@ -1,0 +1,148 @@
+/* Colors
+
+    Body background:       #d1d0c3
+    Page border:           #e9e9df
+    Medium brown:          #bcbcab
+    Dark brown:            #4b4b2c
+    Dark blue:             #3d5185
+
+*/
+
+/* Layout */
+html, body {
+    height: 100%;
+}
+p, pre {
+    margin-bottom: 20px;
+}
+img.center-block {
+    margin-top: 32px;
+    margin-bottom: 32px;
+}
+#wrap {
+  min-height: 100%;
+  height: auto;
+  margin: 0 auto -60px;
+  padding: 0 0 60px;
+}
+#site_logo {
+    margin: 24px 0 8px;
+}
+#usernav {
+    margin-top: 84px;
+}
+#page {
+    background-color: #e9e9df;
+    border: 8px solid #e9e9df;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    padding: 0;
+}
+#content {
+    background-color: #ffffff;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    padding: 12px 16px;
+}
+#footer {
+    background-color: rgb(35, 47, 78);
+    border-top: 3px solid rgb(25, 34, 58);
+    color: #c0c0c0;
+    height: 60px;
+    padding-top: 12px;
+}
+.adsense {
+    margin: 12px auto;
+    text-align: center;
+}
+.outertext li, #footernav li a {
+    color: rgb(121, 121, 101);
+}
+
+/* Styling */
+a, a:hover, a:active {
+    color: #1447c9;
+}
+body {
+    background-color: #d1d0c3;
+    border-top: 5px solid #3d5185;
+}
+code {
+    background-color: #e3e3f0;
+    color: #3557ff;
+    font-weight: bold;
+}
+h1 a, h1 a:hover, h1 a:active {
+    color: #3d5185;
+}
+h2 {
+    border-bottom: 1px solid #c0c0c0;
+}
+h3.short {
+    margin-top: 0px;
+}
+h3 a, h3 a:hover, h3 a:active {
+    color: #3d5185;
+}
+.article p {
+    line-height: 22px;
+    text-align: justify;
+}
+pre {
+    color: #000000;
+}
+pre em {
+    background-color: #fdff7a;
+    font-style: normal;
+}
+textarea {
+    font-family: monospace;
+}
+.navbar {
+    background-color: #bcbcab;
+    border: 0;
+    border-bottom: 5px solid #3d5185;
+    border-radius: 5px 5px 0 0;
+    min-height: 46px;
+    margin: 0;
+}
+.navbar .nav > li > a {
+    color: #4b4b2c;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 140%;
+    text-shadow: none;
+}
+.navbar .nav > li > a:hover {
+    color: #e9e9df;
+}
+.navbar .nav li.active a {
+    background-color: #d1d0c3;
+}
+#footer a {
+    color: #c0c0c0;
+}
+.footer-header {
+    border-right: 1px solid #c0c0c0;
+}
+.banner {
+    margin: 24px auto 28px;
+    width: 728px;
+    height: 90px;
+}
+
+/* Custom icons */
+.icon-cloudshark {
+    background-image: url("/static/img/misc/cloudshark-icon.png");
+    background-position: center center;
+    height: 14px;
+    width: 14px;
+}
+
+/* Label fixes */
+.label a {
+    color: #ffffff;
+}
+ul.list-tags li {
+    padding: 5px;
+}

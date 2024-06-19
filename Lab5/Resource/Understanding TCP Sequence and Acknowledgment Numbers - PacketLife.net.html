@@ -1,0 +1,2828 @@
+<!DOCTYPE html>
+<!-- saved from url=(0088)http://packetlife.net/blog/2010/jun/7/understanding-tcp-sequence-acknowledgment-numbers/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net</title>
+<link href="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/bootstrap.min.css" rel="stylesheet">
+<link href="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/local.css" rel="stylesheet">
+<link rel="icon" type="image/gif" href="http://media.packetlife.net/static/img/favicon.gif">
+
+<link rel="alternate" type="application/rss+xml" title="Latest Blog Posts" href="http://packetlife.net/blog/feed/">
+<script src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/osd.js"></script><script src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/expansion_embed.js"></script><script async="" src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/analytics.js"></script><script async="" type="text/javascript" src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/gpt.js"></script><script type="text/javascript">
+var googletag = googletag || {};
+googletag.cmd = googletag.cmd || [];
+(function() {
+var gads = document.createElement('script');
+gads.async = true;
+gads.type = 'text/javascript';
+var useSSL = 'https:' == document.location.protocol;
+gads.src = (useSSL ? 'https:' : 'http:') + 
+'//www.googletagservices.com/tag/js/gpt.js';
+var node = document.getElementsByTagName('script')[0];
+node.parentNode.insertBefore(gads, node);
+})();
+</script>
+
+<script type="text/javascript">
+googletag.cmd.push(function() {
+googletag.defineSlot('/3265105/PacketLife_Blog_Top_728x90', [728, 90], 'div-gpt-ad-1394245464163-0').addService(googletag.pubads());
+googletag.pubads().enableSingleRequest();
+googletag.enableServices();
+});
+</script>
+<script src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/pubads_impl_88.js" async=""></script><link rel="prefetch" href="http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html"></head>
+
+<body>
+<div id="wrap">
+  <div class="container">
+    <a href="http://packetlife.net/"><img src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/logo.png" alt="PacketLife.net logo" id="site_logo"></a>
+    <ul class="list-inline pull-right outertext" id="usernav">
+      
+        <li>Welcome, Guest!</li>
+        <li>|</li>
+        <li><a href="http://packetlife.net/users/login/">Log in</a></li>
+        <li>|</li>
+        <li><a href="http://packetlife.net/users/register/">Register</a></li>
+      
+    </ul>
+    <div id="page">
+      <div class="header">
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="collapse navbar-collapse">
+              <ul class="nav navbar-nav">
+                <li><a href="http://packetlife.net/blog/">Blog</a></li>
+                <li><a href="http://packetlife.net/library/cheat-sheets/">Cheat Sheets</a></li>
+                <li><a href="http://packetlife.net/captures/">Captures</a></li>
+                <li><a href="http://packetlife.net/armory/">Armory</a></li>
+                <li><a href="http://packetlife.net/toolbox/">Toolbox</a></li>
+                <li><a href="http://packetlife.net/bookshelf/">Bookshelf</a></li>
+                <li><a href="http://packetlife.net/contact/">Contact Me</a></li>
+              </ul>
+              
+            </div>
+        </nav>
+      </div>
+      <div id="content">
+        
+        
+
+  <!-- PacketLife_Blog_Top_728x90 -->
+  <div id="div-gpt-ad-1394245464163-0" class="banner">
+  <script type="text/javascript">
+  googletag.cmd.push(function() { googletag.display('div-gpt-ad-1394245464163-0'); });
+  </script>
+  <div id="google_ads_iframe_/3265105/PacketLife_Blog_Top_728x90_0__container__" style="border: 0pt none; display: inline-block; width: 728px; height: 90px;"><iframe frameborder="0" src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/container.html" id="google_ads_iframe_/3265105/PacketLife_Blog_Top_728x90_0" title="3rd party ad content" name="1-0-2;78543;&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;style&gt;&lt;!--
+a:link { color: #000000 }a:visited { color: #000000 }a:hover { color: #000000 }a:active { color: #000000 }  --&gt;&lt;/style&gt;&lt;script&gt;&lt;!--
+(function(){var b=this;var f=String.prototype.trim?function(a){return a.trim()}:function(a){return a.replace(/^[\s\xa0]+|[\s\xa0]+$/g,&quot;&quot;)},m=function(a,c){return a&lt;c?-1:a&gt;c?1:0};var n;a:{var p=b.navigator;if(p){var q=p.userAgent;if(q){n=q;break a}}n=&quot;&quot;};var r=-1!=n.indexOf(&quot;Opera&quot;),t=-1!=n.indexOf(&quot;Trident&quot;)||-1!=n.indexOf(&quot;MSIE&quot;),u=-1!=n.indexOf(&quot;Edge&quot;),v=-1!=n.indexOf(&quot;Gecko&quot;)&amp;&amp;!(-1!=n.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;-1==n.indexOf(&quot;Edge&quot;))&amp;&amp;!(-1!=n.indexOf(&quot;Trident&quot;)||-1!=n.indexOf(&quot;MSIE&quot;))&amp;&amp;-1==n.indexOf(&quot;Edge&quot;),w=-1!=n.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;-1==n.indexOf(&quot;Edge&quot;),x=function(){var a=b.document;return a?a.documentMode:void 0},y;a:{var z=&quot;&quot;,A=function(){var a=n;if(v)return/rv\:([^\);]+)(\)|;)/.exec(a);if(u)return/Edge\/([\d\.]+)/.exec(a);if(t)return/\b(?:MSIE|rv)[: ]([^\);]+)(\)|;)/.exec(a);if(w)return/WebKit\/(\S+)/.exec(a);if(r)return/(?:Version)[ \/]?(\S+)/.exec(a)}();A&amp;&amp;(z=A?A[1]:&quot;&quot;);if(t){var B=x();if(null!=B&amp;&amp;B&gt;parseFloat(z)){y=String(B);break a}}y=z}var C=y,D={},E=function(a){if(!D[a]){for(var c=0,d=f(String(C)).split(&quot;.&quot;),e=f(String(a)).split(&quot;.&quot;),k=Math.max(d.length,e.length),l=0;0==c&amp;&amp;l&lt;k;l++){var J=d[l]||&quot;&quot;,K=e[l]||&quot;&quot;,L=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;),M=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;);do{var g=L.exec(J)||[&quot;&quot;,&quot;&quot;,&quot;&quot;],h=M.exec(K)||[&quot;&quot;,&quot;&quot;,&quot;&quot;];if(0==g[0].length&amp;&amp;0==h[0].length)break;c=m(0==g[1].length?0:parseInt(g[1],10),0==h[1].length?0:parseInt(h[1],10))||m(0==g[2].length,0==h[2].length)||m(g[2],h[2])}while(0==c)}D[a]=0&lt;=c}},F=b.document,G=F&amp;&amp;t?x()||(&quot;CSS1Compat&quot;==F.compatMode?parseInt(C,10):5):void 0;var H;if(!(H=!v&amp;&amp;!t)){var I;if(I=t)I=9&lt;=Number(G);H=I}H||v&amp;&amp;E(&quot;1.9.1&quot;);t&amp;&amp;E(&quot;9&quot;);var N={};window.ss=function(a){void 0!==N[a]?N[a]++:N[a]=1;var c=document.getElementById(a),d=N[a];if(window.css)css(a,&quot;nm&quot;,d,void 0,void 0);else if(c){a=c.href;var e=a.indexOf(&quot;&amp;nm=&quot;);if(0&gt;e)d=a+&quot;&amp;nm=&quot;+d;else var e=e+4,k=a.indexOf(&quot;&amp;&quot;,e),d=0&lt;=k?a.substring(0,e)+d+a.substring(k):a.substring(0,e)+d;c.href=2E3&lt;d.length?a:d}};}).call(this);function su(id) {var a = document.getElementById(id);var b = (new Date()).getTime();if (a &amp;&amp; a.myt &amp;&amp; b) {var t = b - a.myt;if (window.css) {css(id,&#39;clkt&#39;,t);return;}var bi = a.href.indexOf(&quot;&amp;clkt=&quot;);if (bi &gt; 0) {var c = a.href.substring(0, bi+6); var d = a.href.substring(bi+6, a.href.length);var ei = d.indexOf(&quot;&amp;&quot;);var r = &#39;&#39;;if (ei &gt;= 0)r = d.substring(ei, d.length);a.href = c + t + r; } else {a.href += &quot;&amp;clkt=&quot; + t;}}}(function(){var d=this;var g=String.prototype.trim?function(a){return a.trim()}:function(a){return a.replace(/^[\s\xa0]+|[\s\xa0]+$/g,&quot;&quot;)},m=function(a,b){return a&lt;b?-1:a&gt;b?1:0};var n;a:{var p=d.navigator;if(p){var q=p.userAgent;if(q){n=q;break a}}n=&quot;&quot;};var r=-1!=n.indexOf(&quot;Opera&quot;),t=-1!=n.indexOf(&quot;Trident&quot;)||-1!=n.indexOf(&quot;MSIE&quot;),u=-1!=n.indexOf(&quot;Edge&quot;),v=-1!=n.indexOf(&quot;Gecko&quot;)&amp;&amp;!(-1!=n.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;-1==n.indexOf(&quot;Edge&quot;))&amp;&amp;!(-1!=n.indexOf(&quot;Trident&quot;)||-1!=n.indexOf(&quot;MSIE&quot;))&amp;&amp;-1==n.indexOf(&quot;Edge&quot;),w=-1!=n.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;-1==n.indexOf(&quot;Edge&quot;),x=function(){var a=d.document;return a?a.documentMode:void 0},y;a:{var z=&quot;&quot;,A=function(){var a=n;if(v)return/rv\:([^\);]+)(\)|;)/.exec(a);if(u)return/Edge\/([\d\.]+)/.exec(a);if(t)return/\b(?:MSIE|rv)[: ]([^\);]+)(\)|;)/.exec(a);if(w)return/WebKit\/(\S+)/.exec(a);if(r)return/(?:Version)[ \/]?(\S+)/.exec(a)}();A&amp;&amp;(z=A?A[1]:&quot;&quot;);if(t){var B=x();if(null!=B&amp;&amp;B&gt;parseFloat(z)){y=String(B);break a}}y=z}var C=y,D={},E=function(a){if(!D[a]){for(var b=0,c=g(String(C)).split(&quot;.&quot;),e=g(String(a)).split(&quot;.&quot;),f=Math.max(c.length,e.length),l=0;0==b&amp;&amp;l&lt;f;l++){var K=c[l]||&quot;&quot;,L=e[l]||&quot;&quot;,M=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;),N=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;);do{var h=M.exec(K)||[&quot;&quot;,&quot;&quot;,&quot;&quot;],k=N.exec(L)||[&quot;&quot;,&quot;&quot;,&quot;&quot;];if(0==h[0].length&amp;&amp;0==k[0].length)break;b=m(0==h[1].length?0:parseInt(h[1],10),0==k[1].length?0:parseInt(k[1],10))||m(0==h[2].length,0==k[2].length)||m(h[2],k[2])}while(0==b)}D[a]=0&lt;=b}},F=d.document,G=F&amp;&amp;t?x()||(&quot;CSS1Compat&quot;==F.compatMode?parseInt(C,10):5):void 0;var H;if(!(H=!v&amp;&amp;!t)){var I;if(I=t)I=9&lt;=Number(G);H=I}H||v&amp;&amp;E(&quot;1.9.1&quot;);t&amp;&amp;E(&quot;9&quot;);var J=function(a,b,c,e){if(window.css)css(b,c,e,void 0,void 0);else if(a){b=a.href;var f=&quot;&amp;&quot;+c+&quot;=&quot;;c=b.indexOf(f);0&gt;c?e=b+f+e:(c+=f.length,f=b.indexOf(&quot;&amp;&quot;,c),e=0&lt;=f?b.substring(0,c)+e+b.substring(f):b.substring(0,c)+e);a.href=2E3&lt;e.length?b:e}};var O=null,P=function(a){O=a};document.addEventListener&amp;&amp;document.addEventListener(&quot;mousedown&quot;,P,!0);window.xy=function(a,b,c){c=c||b;if((a=a||O)&amp;&amp;b&amp;&amp;c){var e=Math.round(a.clientY-c.offsetTop),f=b.id;J(b,f,&quot;nx&quot;,Math.round(a.clientX-c.offsetLeft));J(b,f,&quot;ny&quot;,e)}};}).call(this);(function(){var d=this;var f=String.prototype.trim?function(a){return a.trim()}:function(a){return a.replace(/^[\s\xa0]+|[\s\xa0]+$/g,&quot;&quot;)},m=function(a,b){return a&lt;b?-1:a&gt;b?1:0};var n;a:{var p=d.navigator;if(p){var q=p.userAgent;if(q){n=q;break a}}n=&quot;&quot;};var r=-1!=n.indexOf(&quot;Opera&quot;),t=-1!=n.indexOf(&quot;Trident&quot;)||-1!=n.indexOf(&quot;MSIE&quot;),u=-1!=n.indexOf(&quot;Edge&quot;),v=-1!=n.indexOf(&quot;Gecko&quot;)&amp;&amp;!(-1!=n.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;-1==n.indexOf(&quot;Edge&quot;))&amp;&amp;!(-1!=n.indexOf(&quot;Trident&quot;)||-1!=n.indexOf(&quot;MSIE&quot;))&amp;&amp;-1==n.indexOf(&quot;Edge&quot;),w=-1!=n.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;-1==n.indexOf(&quot;Edge&quot;),x=function(){var a=d.document;return a?a.documentMode:void 0},y;a:{var z=&quot;&quot;,A=function(){var a=n;if(v)return/rv\:([^\);]+)(\)|;)/.exec(a);if(u)return/Edge\/([\d\.]+)/.exec(a);if(t)return/\b(?:MSIE|rv)[: ]([^\);]+)(\)|;)/.exec(a);if(w)return/WebKit\/(\S+)/.exec(a);if(r)return/(?:Version)[ \/]?(\S+)/.exec(a)}();A&amp;&amp;(z=A?A[1]:&quot;&quot;);if(t){var B=x();if(null!=B&amp;&amp;B&gt;parseFloat(z)){y=String(B);break a}}y=z}var C=y,D={},E=function(a){if(!D[a]){for(var b=0,c=f(String(C)).split(&quot;.&quot;),e=f(String(a)).split(&quot;.&quot;),k=Math.max(c.length,e.length),l=0;0==b&amp;&amp;l&lt;k;l++){var J=c[l]||&quot;&quot;,K=e[l]||&quot;&quot;,L=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;),M=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;);do{var g=L.exec(J)||[&quot;&quot;,&quot;&quot;,&quot;&quot;],h=M.exec(K)||[&quot;&quot;,&quot;&quot;,&quot;&quot;];if(0==g[0].length&amp;&amp;0==h[0].length)break;b=m(0==g[1].length?0:parseInt(g[1],10),0==h[1].length?0:parseInt(h[1],10))||m(0==g[2].length,0==h[2].length)||m(g[2],h[2])}while(0==b)}D[a]=0&lt;=b}},F=d.document,G=F&amp;&amp;t?x()||(&quot;CSS1Compat&quot;==F.compatMode?parseInt(C,10):5):void 0;var H;if(!(H=!v&amp;&amp;!t)){var I;if(I=t)I=9&lt;=Number(G);H=I}H||v&amp;&amp;E(&quot;1.9.1&quot;);t&amp;&amp;E(&quot;9&quot;);var N=[0,2,1],O=null;document.addEventListener&amp;&amp;document.addEventListener(&quot;mousedown&quot;,function(a){O=a},!0);window.mb=function(a){if(a){var b;if(b=window.event||O){var c;(c=b.which?1&lt;&lt;N[b.which-1]:b.button)&amp;&amp;b.shiftKey&amp;&amp;(c|=8);c&amp;&amp;b.altKey&amp;&amp;(c|=16);c&amp;&amp;b.ctrlKey&amp;&amp;(c|=32);b=c}else b=null;if(b)if(c=b,window.css)css(a.id,&quot;mb&quot;,c,void 0,void 0);else if(a){b=a.href;var e=b.indexOf(&quot;&amp;mb=&quot;);if(0&gt;e)c=b+&quot;&amp;mb=&quot;+c;else{var e=e+4,k=b.indexOf(&quot;&amp;&quot;,e);c=0&lt;=k?b.substring(0,e)+c+b.substring(k):b.substring(0,e)+c}a.href=2E3&lt;c.length?b:c}}};}).call(this);(function(){var b=this;var e=String.prototype.trim?function(a){return a.trim()}:function(a){return a.replace(/^[\s\xa0]+|[\s\xa0]+$/g,&quot;&quot;)},l=function(a,c){return a&lt;c?-1:a&gt;c?1:0};var m;a:{var n=b.navigator;if(n){var p=n.userAgent;if(p){m=p;break a}}m=&quot;&quot;};var q=-1!=m.indexOf(&quot;Opera&quot;),r=-1!=m.indexOf(&quot;Trident&quot;)||-1!=m.indexOf(&quot;MSIE&quot;),t=-1!=m.indexOf(&quot;Edge&quot;),u=-1!=m.indexOf(&quot;Gecko&quot;)&amp;&amp;!(-1!=m.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;-1==m.indexOf(&quot;Edge&quot;))&amp;&amp;!(-1!=m.indexOf(&quot;Trident&quot;)||-1!=m.indexOf(&quot;MSIE&quot;))&amp;&amp;-1==m.indexOf(&quot;Edge&quot;),v=-1!=m.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;-1==m.indexOf(&quot;Edge&quot;),w=function(){var a=b.document;return a?a.documentMode:void 0},x;a:{var y=&quot;&quot;,z=function(){var a=m;if(u)return/rv\:([^\);]+)(\)|;)/.exec(a);if(t)return/Edge\/([\d\.]+)/.exec(a);if(r)return/\b(?:MSIE|rv)[: ]([^\);]+)(\)|;)/.exec(a);if(v)return/WebKit\/(\S+)/.exec(a);if(q)return/(?:Version)[ \/]?(\S+)/.exec(a)}();z&amp;&amp;(y=z?z[1]:&quot;&quot;);if(r){var A=w();if(null!=A&amp;&amp;A&gt;parseFloat(y)){x=String(A);break a}}x=y}var B=x,C={},D=function(a){if(!C[a]){for(var c=0,h=e(String(B)).split(&quot;.&quot;),d=e(String(a)).split(&quot;.&quot;),L=Math.max(h.length,d.length),k=0;0==c&amp;&amp;k&lt;L;k++){var M=h[k]||&quot;&quot;,N=d[k]||&quot;&quot;,O=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;),P=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;);do{var f=O.exec(M)||[&quot;&quot;,&quot;&quot;,&quot;&quot;],g=P.exec(N)||[&quot;&quot;,&quot;&quot;,&quot;&quot;];if(0==f[0].length&amp;&amp;0==g[0].length)break;c=l(0==f[1].length?0:parseInt(f[1],10),0==g[1].length?0:parseInt(g[1],10))||l(0==f[2].length,0==g[2].length)||l(f[2],g[2])}while(0==c)}C[a]=0&lt;=c}},E=b.document,F=E&amp;&amp;r?w()||(&quot;CSS1Compat&quot;==E.compatMode?parseInt(B,10):5):void 0;var G;if(!(G=!u&amp;&amp;!r)){var H;if(H=r)H=9&lt;=Number(F);G=H}G||u&amp;&amp;D(&quot;1.9.1&quot;);r&amp;&amp;D(&quot;9&quot;);var I=function(a,c,h){var d=document;d.addEventListener?d.addEventListener(a,c,h||!1):d.attachEvent&amp;&amp;d.attachEvent(&quot;on&quot;+a,c)};var J,K=!1,Q=!1;I(&quot;mousedown&quot;,function(){K=!0});I(&quot;keydown&quot;,function(){Q=!0});document.addEventListener&amp;&amp;I(&quot;click&quot;,function(a){J=a},!0);window.accbk=function(){var a=J?J:window.event;return a?K||Q?!1:(a.preventDefault?a.preventDefault():a.returnValue=!1,!0):!1};}).call(this);function st(id) {var a = document.getElementById(id);if (a) {a.myt = (new Date()).getTime();xy(window.event, a, document.body);mb(a);}}function ha(a,x){  if (accbk()) return;su(a);}function ia(a,e,x) {if (accbk()) return;su(a);}function ja(a,x) {if (accbk()) return;su(a);}function ga(o,e,x) {if (document.getElementById) {var a=o.id.substring(1),p=&quot;&quot;,r=&quot;&quot;,g=e.target,t,f,h;if (g) {t=g.id;f=g.parentNode;if (f) {p=f.id;h=f.parentNode;if (h)r=h.id;}} else {h=e.srcElement;f=h.parentNode;if (f)p=f.id;t=h.id;}if (t==a||p==a||r==a)return true;ia(a,e,x);top.location.href=document.getElementById(a).href;}}
+//--&gt;
+&lt;/script&gt;&lt;/head&gt;&lt;body leftMargin=&quot;0&quot; topMargin=&quot;0&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; style=&quot;background:transparent&quot; &gt;&lt;div id=&quot;google_image_div&quot; style=&quot;height: 90px; width: 728px; overflow:hidden; position:absolute&quot;&gt;&lt;a id=&quot;aw0&quot; target=&quot;_top&quot; href=&quot;https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=CezrO37BTV5zIKsm9oAPCxpf4CuT07uxEseTmpeACwabTrrcFEAEgt4HZF2AzoAH38urNA8gBA-ACAKgDAcgDmQSqBOwBT9C1edLXtcPJ-p7ifbCyDVqrANa678RJmmSKkpqS-B0i0IOFuM6VYW9nxKKpDGRqTx4Do_oqiC7cNxpAgph5tNkwzgsc3ZcecEg8OzlS8bjK1OpZ7NM7XNfrSdF4s3bcEl0hu6gg3mwCLY3ZAXyUUwztzCWHoIvqdKfHnokRspzlibqHsyyYfFEctWCZuPRKspjMQTN2Xoe77dmN0GbW4JQk7zktiALTcI2Qs1sr6fezywIlWIKdGrK-dymEU0VRshxV2onuzDlD9rbOUxU0eB84N5j5v9eluGBNSH5OwdjuLC98eZt87EXmydHgBAGIBgGgBgOAB_GMlTKoB6a-G9gHAdgTAw&amp;num=1&amp;cid=CAASEuRoF6dZtwvKU3rP4Z-RBIUrwQ&amp;sig=AOD64_2G1PZda_MG24SAQmOWuBQpP2ROpQ&amp;client=ca-pub-8592253979949884&amp;adurl=https://www.youtube.com/watch%3Fv%3DlHjKhnl5r2M&quot;&gt;&lt;img src=&quot;https://tpc.googlesyndication.com/simgad/18127534237882881923&quot; border=&quot;0&quot; width=&quot;728&quot; height=&quot;90&quot; alt=&quot;&quot; class=&quot;img_ad&quot;  /&gt;&lt;/a&gt;&lt;style&gt;div,ul,li{margin:0;padding:0;}.abgc{height:15px;position:absolute;right:16px;text-rendering:geometricPrecision;top:0;width:15px;z-index:9020;}.abgb{height:15px;width:15px;}.abgc img{display:block;}.abgc svg{display:block;}.abgs{display:none;height:100%;}.abgl{text-decoration:none;}.abgi{fill-opacity:1.0;fill:#00aecd;stroke:none;}.abgbg{fill-opacity:1.0;fill:#cdcccc;stroke:none;}.abgtxt{fill:black;font-family:&#39;Arial&#39;;font-size:100px;overflow:visible;stroke:none;}&lt;/style&gt;&lt;div id=abgc class=abgc dir=&#39;ltr&#39;&gt;&lt;div id=abgb class=&quot;abgb&quot;&gt;&lt;/div&gt;&lt;div id=abgs class=abgs&gt;&lt;a id=abgl class=abgl href=&quot;https://www.google.com/url?ct=abg&amp;amp;q=https://www.google.com/adsense/support/bin/request.py%3Fcontact%3Dabg_afc%26url%3Dhttp://packetlife.net/blog/2010/jun/7/understanding-tcp-sequence-acknowledgment-numbers/%26gl%3DBD%26hl%3Den%26client%3Dca-pub-8592253979949884%26ai0%3DCezrO37BTV5zIKsm9oAPCxpf4CuT07uxEseTmpeACwabTrrcFEAEgt4HZF2AzoAH38urNA8gBA-ACAKgDAcgDmQSqBOwBT9C1edLXtcPJ-p7ifbCyDVqrANa678RJmmSKkpqS-B0i0IOFuM6VYW9nxKKpDGRqTx4Do_oqiC7cNxpAgph5tNkwzgsc3ZcecEg8OzlS8bjK1OpZ7NM7XNfrSdF4s3bcEl0hu6gg3mwCLY3ZAXyUUwztzCWHoIvqdKfHnokRspzlibqHsyyYfFEctWCZuPRKspjMQTN2Xoe77dmN0GbW4JQk7zktiALTcI2Qs1sr6fezywIlWIKdGrK-dymEU0VRshxV2onuzDlD9rbOUxU0eB84N5j5v9eluGBNSH5OwdjuLC98eZt87EXmydHgBAGIBgGgBgOAB_GMlTKoB6a-G9gHAdgTAw&amp;amp;usg=AFQjCNG_3SzsWLbTxN3XkpFE-fj28oufeg&quot; target=_blank&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;script&gt;var abgp={elp:document.getElementById(&#39;abgcp&#39;),el:document.getElementById(&#39;abgc&#39;),ael:document.getElementById(&#39;abgs&#39;),iel:document.getElementById(&#39;abgb&#39;),hw:15,sw:96,hh:15,sh:15,himg:&#39;https://tpc.googlesyndication.com&#39;+&#39;/pagead/images/abg/icon.png&#39;,simg:&#39;https://tpc.googlesyndication.com/pagead/images/abg/en.png&#39;,alt:&#39;Ads by Google&#39;,t:&#39;Ads by&#39;,tw:34,t2:&#39;Google&#39;,t2w:38,tbo:0,popuptext:&#39;&#39;,att:&#39;adsbygoogle&#39;,ff:&#39;&#39;,halign:&#39;right&#39;,fe:false,iba:false,lttp:true,umd:false,uic:false,uit:false,ict:document.getElementById(&#39;cbb&#39;),icd:undefined,uaal:true,opi: false};&lt;/script&gt;&lt;script src=&quot;https://tpc.googlesyndication.com/pagead/js/r20160601/r20110914/abg.js&quot;&gt;&lt;/script&gt;&lt;style&gt;.cbc{background-image: url(&#39;https://tpc.googlesyndication.com/pagead/images/x_button_blue2.svg&#39;);background-position: right top;background-repeat: no-repeat;cursor:pointer;height:15px;right:0;top:0;margin:0;overflow:hidden;padding:0;position:absolute;transform: scaleX(1);width:16px;z-index:9010;}.cbc.cbc-hover {background-image: url(&#39;https://tpc.googlesyndication.com/pagead/images/x_button_dark.svg&#39;);}.cbc &gt; .cb-x{height: 15px;position:absolute;width: 16px;right:0;top:0;}.cb-x &gt; .cb-x-svg{background-color: lightgray;position:absolute;}.cbc.cbc-hover &gt; .cb-x &gt; .cb-x-svg{background-color: #58585a;}.cb-x &gt; .cb-x-svg &gt; .cb-x-svg-path{fill : #00aecd;}.cbc.cbc-hover &gt; .cb-x &gt; .cb-x-svg &gt; .cb-x-svg-path{fill : white;}.cb-x &gt; .cb-x-svg &gt; .cb-x-svg-s-path{fill : white;}&lt;/style&gt;&lt;div id=&quot;cbc&quot; class=cbc &gt;&lt;div id=&quot;cb-x&quot; class=cb-x&gt;&lt;/div&gt; &lt;/div&gt; &lt;style&gt;.ddmc{background:#ccc;color:#000;padding:0;position:absolute;z-index:9020;max-width:100%;box-shadow:2px 2px 3px #aaaaaa;}.ddmc.left{margin-right:0;left:0px;}.ddmc.right{margin-left:0;right:0px;}.ddmc.top{bottom:20px;}.ddmc.bottom{top:20px;}.ddmc .tip{border-left:4px solid transparent;border-right:4px solid transparent;height:0;position:absolute;width:0;font-size:0;line-height:0;}.ddmc.bottom .tip{border-bottom:4px solid #ccc;top:-4px;}.ddmc.top .tip{border-top:4px solid #ccc;bottom:-4px;}.ddmc.right .tip{right:3px;}.ddmc.left .tip{left:3px;}.ddmc .dropdown-content{display:block;}.dropdown-content{display:none;border-collapse:collapse;}.dropdown-item{font:12px Arial,sans-serif;cursor:pointer;padding:3px 7px;vertical-align:middle;}.dropdown-item-hover, a.dropdown-item.dropdown-item-hover {background:#58585a;color:#fff;}.dropdown-content &gt; table{border-collapse:collapse;border-spacing:0;}.dropdown-content &gt; table &gt; tbody &gt; tr &gt; td{padding:0;}a.dropdown-item {color: inherit;cursor: inherit;display: block;text-decoration: inherit;}&lt;/style&gt;&lt;div id=&quot;ddmc&quot; style=&quot;display:none&quot;&gt;&lt;div class=&quot;tip&quot;&gt;&lt;/div&gt;&lt;div class=&quot;dropdown-content&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&lt;div id=&quot;pubmute&quot; style=&quot;border-bottom:1px solid #999;&quot; class=&quot;dropdown-item&quot;&gt;&lt;span&gt;Ad covers the page&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;div id=&quot;admute&quot; class=&quot;dropdown-item&quot;&gt;&lt;span&gt;Stop seeing this ad&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/div&gt;&lt;script&gt;(function(){var h=this,k=function(a,b){var c=a.split(&quot;.&quot;),d=h;c[0]in d||!d.execScript||d.execScript(&quot;var &quot;+c[0]);for(var f;c.length&amp;&amp;(f=c.shift());)c.length||void 0===b?d=d[f]?d[f]:d[f]={}:d[f]=b},aa=function(a,b,c){return a.call.apply(a.bind,arguments)},ca=function(a,b,c){if(!a)throw Error();if(2&lt;arguments.length){var d=Array.prototype.slice.call(arguments,2);return function(){var c=Array.prototype.slice.call(arguments);Array.prototype.unshift.apply(c,d);return a.apply(b,c)}}return function(){return a.apply(b,arguments)}},l=function(a,b,c){l=Function.prototype.bind&amp;&amp;-1!=Function.prototype.bind.toString().indexOf(&quot;native code&quot;)?aa:ca;return l.apply(null,arguments)};var n=&quot;undefined&quot;!=typeof DOMTokenList,q=function(a,b){if(n){var c=a.classList;0==c.contains(b)&amp;&amp;c.toggle(b)}else if(c=a.className){for(var c=c.split(/\s+/),d=!1,f=0;f&lt;c.length&amp;&amp;!d;++f)d=c[f]==b;d||(c.push(b),a.className=c.join(&quot; &quot;))}else a.className=b},r=function(a,b){if(n){var c=a.classList;1==c.contains(b)&amp;&amp;c.toggle(b)}else if((c=a.className)&amp;&amp;!(0&gt;c.indexOf(b))){for(var c=c.split(/\s+/),d=0;d&lt;c.length;++d)c[d]==b&amp;&amp;c.splice(d--,1);a.className=c.join(&quot; &quot;)}};var t=function(a,b,c){a.addEventListener?a.addEventListener(b,c,!1):a.attachEvent&amp;&amp;a.attachEvent(&quot;on&quot;+b,c)};var x=String.prototype.trim?function(a){return a.trim()}:function(a){return a.replace(/^[\s\xa0]+|[\s\xa0]+$/g,&quot;&quot;)},y=function(a,b){return a&lt;b?-1:a&gt;b?1:0};var z;a:{var A=h.navigator;if(A){var B=A.userAgent;if(B){z=B;break a}}z=&quot;&quot;};var da=-1!=z.indexOf(&quot;Opera&quot;),C=-1!=z.indexOf(&quot;Trident&quot;)||-1!=z.indexOf(&quot;MSIE&quot;),ea=-1!=z.indexOf(&quot;Edge&quot;),D=-1!=z.indexOf(&quot;Gecko&quot;)&amp;&amp;!(-1!=z.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;-1==z.indexOf(&quot;Edge&quot;))&amp;&amp;!(-1!=z.indexOf(&quot;Trident&quot;)||-1!=z.indexOf(&quot;MSIE&quot;))&amp;&amp;-1==z.indexOf(&quot;Edge&quot;),fa=-1!=z.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;-1==z.indexOf(&quot;Edge&quot;),E=function(){var a=h.document;return a?a.documentMode:void 0},F;a:{var G=&quot;&quot;,H=function(){var a=z;if(D)return/rv\:([^\);]+)(\)|;)/.exec(a);if(ea)return/Edge\/([\d\.]+)/.exec(a);if(C)return/\b(?:MSIE|rv)[: ]([^\);]+)(\)|;)/.exec(a);if(fa)return/WebKit\/(\S+)/.exec(a);if(da)return/(?:Version)[ \/]?(\S+)/.exec(a)}();H&amp;&amp;(G=H?H[1]:&quot;&quot;);if(C){var I=E();if(null!=I&amp;&amp;I&gt;parseFloat(G)){F=String(I);break a}}F=G}var J=F,K={},L=function(a){if(!K[a]){for(var b=0,c=x(String(J)).split(&quot;.&quot;),d=x(String(a)).split(&quot;.&quot;),f=Math.max(c.length,d.length),e=0;0==b&amp;&amp;e&lt;f;e++){var m=c[e]||&quot;&quot;,g=d[e]||&quot;&quot;,u=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;),v=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;);do{var p=u.exec(m)||[&quot;&quot;,&quot;&quot;,&quot;&quot;],w=v.exec(g)||[&quot;&quot;,&quot;&quot;,&quot;&quot;];if(0==p[0].length&amp;&amp;0==w[0].length)break;b=y(0==p[1].length?0:parseInt(p[1],10),0==w[1].length?0:parseInt(w[1],10))||y(0==p[2].length,0==w[2].length)||y(p[2],w[2])}while(0==b)}K[a]=0&lt;=b}},M=h.document,ga=M&amp;&amp;C?E()||(&quot;CSS1Compat&quot;==M.compatMode?parseInt(J,10):5):void 0;var N;if(!(N=!D&amp;&amp;!C)){var O;if(O=C)O=9&lt;=Number(ga);N=O}N||D&amp;&amp;L(&quot;1.9.1&quot;);C&amp;&amp;L(&quot;9&quot;);var ha=function(a,b){if(!a||!b)return!1;if(a.contains&amp;&amp;1==b.nodeType)return a==b||a.contains(b);if(&quot;undefined&quot;!=typeof a.compareDocumentPosition)return a==b||!!(a.compareDocumentPosition(b)&amp;16);for(;b&amp;&amp;a!=b;)b=b.parentNode;return b==a};var ia=function(a,b,c){var d=&quot;mouseenter_custom&quot;==b,f=P(b);return function(e){e||(e=window.event);if(e.type==f){if(&quot;mouseenter_custom&quot;==b||&quot;mouseleave_custom&quot;==b){var m;if(m=d?e.relatedTarget||e.fromElement:e.relatedTarget||e.toElement)for(var g=0;g&lt;a.length;g++)if(ha(a[g],m))return}c(e)}}},P=function(a){return&quot;mouseenter_custom&quot;==a?&quot;mouseover&quot;:&quot;mouseleave_custom&quot;==a?&quot;mouseout&quot;:a};var Q=function(a,b,c,d,f,e,m,g,u,v){this.m=a;this.ca=b;this.K=c;this.aa=d;this.H=f;this.G=e;this.o=null;this.I=!1;this.F=v;this.T=u;this.j=document.getElementById(&quot;pubmute&quot;+g);this.i=document.getElementById(&quot;admute&quot;+g);this.l=document.getElementById(&quot;wta&quot;+g);this.U=parseInt(g,10)||0;this.B();this.m.className=[&quot;ddmc&quot;,m&amp;1?&quot;left&quot;:&quot;right&quot;,m&amp;2?&quot;top&quot;:&quot;bottom&quot;].join(&quot; &quot;)};Q.prototype.B=function(){R(this.m,&quot;mouseenter_custom&quot;,this,this.v);R(this.m,&quot;mouseleave_custom&quot;,this,this.L);this.j&amp;&amp;(R(this.j,&quot;mouseenter_custom&quot;,this,this.Z),R(this.j,&quot;mouseleave_custom&quot;,this,this.A),t(this.j,&quot;click&quot;,l(this.ba,this)));this.i&amp;&amp;(R(this.i,&quot;mouseenter_custom&quot;,this,this.P),R(this.i,&quot;mouseleave_custom&quot;,this,this.u),t(this.i,&quot;click&quot;,l(this.$,this)));this.l&amp;&amp;(R(this.l,&quot;mouseenter_custom&quot;,this,this.da),R(this.l,&quot;mouseleave_custom&quot;,this,this.C),t(this.l,&quot;click&quot;,l(this.Y,this)))};Q.prototype.ba=function(){S(this);ka(this,0);var a=this.K;null!=a&amp;&amp;a();T(this,&quot;user_feedback_menu_option&quot;,&quot;3&quot;,!0)};Q.prototype.$=function(){S(this);ka(this,1);var a=this.K;null!=a&amp;&amp;a();T(this,&quot;user_feedback_menu_option&quot;,&quot;1&quot;,!0)};var ka=function(a,b){var c={type:b,close_button_token:a.G,creative_conversion_url:a.H,ablation_config:a.T,undo_callback:a.aa,creative_index:a.U};if(a.F)a.F.fireOnObject(&quot;mute_option_selected&quot;,c);else{var d;a:{d=[&quot;muteSurvey&quot;];for(var f=h,e;e=d.shift();)if(null!=f[e])f=f[e];else{d=null;break a}d=f}d&amp;&amp;d.setupSurveyPage(c)}};Q.prototype.Y=function(){S(this);T(this,&quot;closebutton_whythisad_click&quot;,&quot;1&quot;,!1)};var U=function(a,b){a.m.style.display=b?&quot;&quot;:&quot;none&quot;};Q.prototype.L=function(){this.o=h.setTimeout(l(function(){S(this);this.o=null},this),500)};Q.prototype.v=function(){null!=this.o&amp;&amp;(h.clearTimeout(this.o),this.o=null)};var S=function(a){var b=a.ca;null!=b&amp;&amp;b();V(a)&amp;&amp;U(a,!1)};Q.prototype.Z=function(){this.j&amp;&amp;q(this.j,&quot;dropdown-item-hover&quot;);this.u();this.C()};Q.prototype.A=function(){this.j&amp;&amp;r(this.j,&quot;dropdown-item-hover&quot;)};Q.prototype.P=function(){this.i&amp;&amp;q(this.i,&quot;dropdown-item-hover&quot;);this.A();this.C()};Q.prototype.u=function(){this.i&amp;&amp;r(this.i,&quot;dropdown-item-hover&quot;)};Q.prototype.da=function(){this.l&amp;&amp;q(this.l,&quot;dropdown-item-hover&quot;);this.u();this.A()};Q.prototype.C=function(){this.l&amp;&amp;r(this.l,&quot;dropdown-item-hover&quot;)};var V=function(a){return&quot;none&quot;!==a.m.style.display};Q.prototype.toggle=function(){V(this)?V(this)&amp;&amp;U(this,!1):(U(this,!0),this.I||(this.I=!0,T(this,&quot;user_feedback_menu_interaction&quot;)))};var T=function(a,b,c,d){a=a.H+&quot;&amp;label=&quot;+b+(c?&quot;&amp;label_instance=&quot;+c:&quot;&quot;)+(d?&quot;&amp;cbt=&quot;+a.G:&quot;&quot;);b=window;b.google_image_requests||(b.google_image_requests=[]);c=b.document.createElement(&quot;img&quot;);c.src=a;b.google_image_requests.push(c)},R=function(a,b,c,d){d=ia([a],b,l(d,c));t(a,P(b),l(d,c))};var W=function(a,b,c,d,f,e,m,g,u,v,p,w,ba){this.creativeConversionUrl=f;this.S=e;this.R=document.getElementById(&quot;cb-x&quot;+p);f=l(this.w,this);e=l(this.J,this);var la=l(this.M,this);d?(g=g?1:0,u&amp;&amp;(g|=2),d=new Q(d,f,e,la,this.creativeConversionUrl,this.S,g,p,w,ba)):d=null;this.h=d;this.N=document.getElementById(&quot;pbc&quot;);this.g=a;this.O=b;this.D=c;this.s=ba;&quot;undefined&quot;!=typeof SVGElement&amp;&amp;&quot;undefined&quot;!=typeof document.createElementNS&amp;&amp;v&amp;&amp;(this.g.style.backgroundImage=&quot;none&quot;,this.R.appendChild(ma(m)));this.B()},X;W.prototype.B=function(){t(this.g,&quot;click&quot;,l(this.V,this));t(this.g,&quot;mouseover&quot;,l(this.X,this));t(this.g,&quot;mouseout&quot;,l(this.W,this))};W.prototype.V=function(){this.h&amp;&amp;(this.h.v(),this.h.toggle())};W.prototype.X=function(){this.h&amp;&amp;this.h.v();null!==this.g&amp;&amp;q(this.g,&quot;cbc-hover&quot;)};W.prototype.W=function(){this.h&amp;&amp;V(this.h)?this.h.L():this.w()};var ma=function(a){var b=document.createElementNS(&quot;//www.w3.org/2000/svg&quot;,&quot;svg&quot;),c=document.createElementNS(&quot;//www.w3.org/2000/svg&quot;,&quot;path&quot;),d=document.createElementNS(&quot;//www.w3.org/2000/svg&quot;,&quot;path&quot;),f=1.15/Math.sqrt(2),e=.2*a,f=&quot;M&quot;+(e+f+1)+&quot;,&quot;+e+&quot;L&quot;+(a/2+1)+&quot;,&quot;+(a/2-f)+&quot;L&quot;+(a-e-f+1)+&quot;,&quot;+e+&quot;L&quot;+(a-e+1)+&quot;,&quot;+(e+f)+&quot;L&quot;+(a/2+f+1)+&quot;,&quot;+a/2+&quot;L&quot;+(a-e+1)+&quot;,&quot;+(a-e-f)+&quot;L&quot;+(a-e-f+1)+&quot;,&quot;+(a-e)+&quot;L&quot;+(a/2+1)+&quot;,&quot;+(a/2+f)+&quot;L&quot;+(e+f+1)+&quot;,&quot;+(a-e)+&quot;L&quot;+(e+1)+&quot;,&quot;+(a-e-f)+&quot;L&quot;+(a/2-f+1)+&quot;,&quot;+a/2+&quot;L&quot;+(e+1)+&quot;,&quot;+(e+f)+&quot;Z&quot;,e=&quot;M0,0L1,0L1,&quot;+a+&quot;L0,&quot;+a+&quot;Z&quot;;b.setAttribute(&quot;class&quot;,&quot;cb-x-svg&quot;);b.setAttribute(&quot;width&quot;,a+1);b.setAttribute(&quot;height&quot;,a);b.appendChild(c);b.appendChild(d);c.setAttribute(&quot;d&quot;,f);c.setAttribute(&quot;class&quot;,&quot;cb-x-svg-path&quot;);d.setAttribute(&quot;d&quot;,e);d.setAttribute(&quot;class&quot;,&quot;cb-x-svg-s-path&quot;);return b},Y=function(a){a&amp;&amp;(a.style.display=&quot;block&quot;)},Z=function(a){a&amp;&amp;(a.style.display=&quot;none&quot;)};W.prototype.w=function(){null!==this.g&amp;&amp;r(this.g,&quot;cbc-hover&quot;)};W.prototype.J=function(){this.w();this.s?this.s.showOnly(0):(Z(this.g),Z(this.D),Z(this.N),Y(this.O))};W.prototype.M=function(){this.s?this.s.resetAll():(Y(this.g),Y(this.D),Y(this.N),Z(this.O))};k(&quot;cbb&quot;,function(a,b,c,d,f,e,m,g,u,v){t(window,&quot;load&quot;,function(){a&amp;&amp;(X=new W(a,document.getElementById(&quot;cbtf&quot;),b,c,d,f,15,m,g,u,v,e,window.adSlot))})});k(&quot;cbbha&quot;,function(){X.J()});k(&quot;cbbsa&quot;,function(){X.M()});}).call(this);cbb(document.getElementById(&#39;cbc&#39;),document.getElementById(&#39;google_image_div&#39;),document.getElementById(&#39;ddmc&#39;),&#39;https://googleads.g.doubleclick.net/pagead/conversion/?ai\x3dCezrO37BTV5zIKsm9oAPCxpf4CuT07uxEseTmpeACwabTrrcFEAEgt4HZF2AzoAH38urNA8gBA-ACAKgDAcgDmQSqBOwBT9C1edLXtcPJ-p7ifbCyDVqrANa678RJmmSKkpqS-B0i0IOFuM6VYW9nxKKpDGRqTx4Do_oqiC7cNxpAgph5tNkwzgsc3ZcecEg8OzlS8bjK1OpZ7NM7XNfrSdF4s3bcEl0hu6gg3mwCLY3ZAXyUUwztzCWHoIvqdKfHnokRspzlibqHsyyYfFEctWCZuPRKspjMQTN2Xoe77dmN0GbW4JQk7zktiALTcI2Qs1sr6fezywIlWIKdGrK-dymEU0VRshxV2onuzDlD9rbOUxU0eB84N5j5v9eluGBNSH5OwdjuLC98eZt87EXmydHgBAGIBgGgBgOAB_GMlTKoB6a-G9gHAdgTAw\x26sigh\x3dPhCx2tvVbs4&#39;,&#39;4lhR0ZMM-UIIseTmpeACEILj3pwCGJnhgTEiI3d3dy55b3V0dWJlLmNvbS93YXRjaD92PWxIaktobmw1cjJNMggIBRMYvJoTFEIXY2EtcHViLTg1OTIyNTM5Nzk5NDk4ODRIBVgDcAE&#39;,&#39;{\x22key_value\x22:[],\x22googMsgType\x22:\x22sth\x22}&#39;,false,false,false,&#39;&#39;);&lt;/script&gt;&lt;iframe frameborder=0 height=0 width=0 src=&quot;https://googleads.g.doubleclick.net/pagead/drt/re?v=r20150723&quot; style=&quot;position:absolute&quot;&gt;&lt;/iframe&gt;&lt;/div&gt;&lt;script src=&quot;https://tpc.googlesyndication.com/pagead/js/r20160601/r20110914/client/ext/m_js_controller.js&quot;&gt;&lt;/script&gt;&lt;script&gt;buildAdSlot([[[1,0,728,90,&quot;https://www.youtube.com/watch?v=lHjKhnl5r2M&quot;,&quot;https://googleads.g.doubleclick.net/pagead/conversion/?ai=CezrO37BTV5zIKsm9oAPCxpf4CuT07uxEseTmpeACwabTrrcFEAEgt4HZF2AzoAH38urNA8gBA-ACAKgDAcgDmQSqBOwBT9C1edLXtcPJ-p7ifbCyDVqrANa678RJmmSKkpqS-B0i0IOFuM6VYW9nxKKpDGRqTx4Do_oqiC7cNxpAgph5tNkwzgsc3ZcecEg8OzlS8bjK1OpZ7NM7XNfrSdF4s3bcEl0hu6gg3mwCLY3ZAXyUUwztzCWHoIvqdKfHnokRspzlibqHsyyYfFEctWCZuPRKspjMQTN2Xoe77dmN0GbW4JQk7zktiALTcI2Qs1sr6fezywIlWIKdGrK-dymEU0VRshxV2onuzDlD9rbOUxU0eB84N5j5v9eluGBNSH5OwdjuLC98eZt87EXmydHgBAGIBgGgBgOAB_GMlTKoB6a-G9gHAdgTAw\u0026sigh=PhCx2tvVbs4&quot;]],728,90,0,0,null,&quot;CNyzha2MkM0CFckeaAodQuMFrw&quot;,&quot;&quot;,null,&quot;ca-pub-8592253979949884&quot;,728,90,0,&quot;_top&quot;,null,null,0,&quot;https://tpc.googlesyndication.com&quot;,null,0,0,875014947,null,null,null,[0.9,0,10,0,[0,0,0],1000,0,&quot;&quot;,-1,-1,300,0],null,null,null,null,null,null,null,1]);&lt;/script&gt;&lt;script&gt;(function(){var g,k=this,aa=function(a){var b=typeof a;if(&quot;object&quot;==b)if(a){if(a instanceof Array)return&quot;array&quot;;if(a instanceof Object)return b;var c=Object.prototype.toString.call(a);if(&quot;[object Window]&quot;==c)return&quot;object&quot;;if(&quot;[object Array]&quot;==c||&quot;number&quot;==typeof a.length&amp;&amp;&quot;undefined&quot;!=typeof a.splice&amp;&amp;&quot;undefined&quot;!=typeof a.propertyIsEnumerable&amp;&amp;!a.propertyIsEnumerable(&quot;splice&quot;))return&quot;array&quot;;if(&quot;[object Function]&quot;==c||&quot;undefined&quot;!=typeof a.call&amp;&amp;&quot;undefined&quot;!=typeof a.propertyIsEnumerable&amp;&amp;!a.propertyIsEnumerable(&quot;call&quot;))return&quot;function&quot;}else return&quot;null&quot;;else if(&quot;function&quot;==b&amp;&amp;&quot;undefined&quot;==typeof a.call)return&quot;object&quot;;return b},l=function(a){var b=aa(a);return&quot;array&quot;==b||&quot;object&quot;==b&amp;&amp;&quot;number&quot;==typeof a.length},m=function(a){return&quot;string&quot;==typeof a},ba=function(a,b,c){return a.call.apply(a.bind,arguments)},ca=function(a,b,c){if(!a)throw Error();if(2&lt;arguments.length){var d=Array.prototype.slice.call(arguments,2);return function(){var c=Array.prototype.slice.call(arguments);Array.prototype.unshift.apply(c,d);return a.apply(b,c)}}return function(){return a.apply(b,arguments)}},p=function(a,b,c){p=Function.prototype.bind&amp;&amp;-1!=Function.prototype.bind.toString().indexOf(&quot;native code&quot;)?ba:ca;return p.apply(null,arguments)},da=Date.now||function(){return+new Date};var ea=String.prototype.trim?function(a){return a.trim()}:function(a){return a.replace(/^[\s\xa0]+|[\s\xa0]+$/g,&quot;&quot;)},q=function(a,b){return-1!=a.indexOf(b)},r=function(a,b){return a&lt;b?-1:a&gt;b?1:0};var fa=Array.prototype.forEach?function(a,b,c){Array.prototype.forEach.call(a,b,c)}:function(a,b,c){for(var d=a.length,e=m(a)?a.split(&quot;&quot;):a,f=0;f&lt;d;f++)f in e&amp;&amp;b.call(c,e[f],f,a)},ga=function(a){return Array.prototype.concat.apply(Array.prototype,arguments)},ha=function(a){var b=a.length;if(0&lt;b){for(var c=Array(b),d=0;d&lt;b;d++)c[d]=a[d];return c}return[]};var ia=function(a){var b=[],c=0,d;for(d in a)b[c++]=a[d];return b},ka=function(a){var b=[],c=0,d;for(d in a)b[c++]=d;return b};var t;a:{var la=k.navigator;if(la){var ma=la.userAgent;if(ma){t=ma;break a}}t=&quot;&quot;};var na=q(t,&quot;Opera&quot;),u=q(t,&quot;Trident&quot;)||q(t,&quot;MSIE&quot;),oa=q(t,&quot;Edge&quot;),v=q(t,&quot;Gecko&quot;)&amp;&amp;!(q(t.toLowerCase(),&quot;webkit&quot;)&amp;&amp;!q(t,&quot;Edge&quot;))&amp;&amp;!(q(t,&quot;Trident&quot;)||q(t,&quot;MSIE&quot;))&amp;&amp;!q(t,&quot;Edge&quot;),pa=q(t.toLowerCase(),&quot;webkit&quot;)&amp;&amp;!q(t,&quot;Edge&quot;),qa=function(){var a=k.document;return a?a.documentMode:void 0},w;a:{var x=&quot;&quot;,y=function(){var a=t;if(v)return/rv\:([^\);]+)(\)|;)/.exec(a);if(oa)return/Edge\/([\d\.]+)/.exec(a);if(u)return/\b(?:MSIE|rv)[: ]([^\);]+)(\)|;)/.exec(a);if(pa)return/WebKit\/(\S+)/.exec(a);if(na)return/(?:Version)[ \/]?(\S+)/.exec(a)}();y&amp;&amp;(x=y?y[1]:&quot;&quot;);if(u){var z=qa();if(null!=z&amp;&amp;z&gt;parseFloat(x)){w=String(z);break a}}w=x}var ra=w,sa={},ta=function(a){if(!sa[a]){for(var b=0,c=ea(String(ra)).split(&quot;.&quot;),d=ea(String(a)).split(&quot;.&quot;),e=Math.max(c.length,d.length),f=0;0==b&amp;&amp;f&lt;e;f++){var h=c[f]||&quot;&quot;,n=d[f]||&quot;&quot;,U=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;),Aa=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;);do{var E=U.exec(h)||[&quot;&quot;,&quot;&quot;,&quot;&quot;],F=Aa.exec(n)||[&quot;&quot;,&quot;&quot;,&quot;&quot;];if(0==E[0].length&amp;&amp;0==F[0].length)break;b=r(0==E[1].length?0:parseInt(E[1],10),0==F[1].length?0:parseInt(F[1],10))||r(0==E[2].length,0==F[2].length)||r(E[2],F[2])}while(0==b)}sa[a]=0&lt;=b}},ua=k.document,va=ua&amp;&amp;u?qa()||(&quot;CSS1Compat&quot;==ua.compatMode?parseInt(ra,10):5):void 0;var A;if(!(A=!v&amp;&amp;!u)){var B;if(B=u)B=9&lt;=Number(va);A=B}A||v&amp;&amp;ta(&quot;1.9.1&quot;);u&amp;&amp;ta(&quot;9&quot;);var wa=function(a,b,c){a.addEventListener?a.addEventListener(b,c,!1):a.attachEvent&amp;&amp;a.attachEvent(&quot;on&quot;+b,c)};var xa=/^(?:([^:/?#.]+):)?(?:\/\/(?:([^/?#]*)@)?([^/#?]*?)(?::([0-9]+))?(?=[/#?]|$))?([^?#]+)?(?:\?([^#]*))?(?:#(.*))?$/,ya=function(a,b){if(a)for(var c=a.split(&quot;&amp;&quot;),d=0;d&lt;c.length;d++){var e=c[d].indexOf(&quot;=&quot;),f,h=null;0&lt;=e?(f=c[d].substring(0,e),h=c[d].substring(e+1)):f=c[d];b(f,h?decodeURIComponent(h.replace(/\+/g,&quot; &quot;)):&quot;&quot;)}};var C=document,D=window;var za=&quot;StopIteration&quot;in k?k.StopIteration:{message:&quot;StopIteration&quot;,stack:&quot;&quot;},G=function(){};G.prototype.next=function(){throw za;};G.prototype.X=function(){return this};var H=function(a,b){this.o={};this.i=[];this.I=this.h=0;var c=arguments.length;if(1&lt;c){if(c%2)throw Error(&quot;Uneven number of arguments&quot;);for(var d=0;d&lt;c;d+=2)this.set(arguments[d],arguments[d+1])}else a&amp;&amp;this.addAll(a)};g=H.prototype;g.m=function(){I(this);for(var a=[],b=0;b&lt;this.i.length;b++)a.push(this.o[this.i[b]]);return a};g.w=function(){I(this);return this.i.concat()};g.G=function(a){return J(this.o,a)};g.clear=function(){this.o={};this.I=this.h=this.i.length=0};g.remove=function(a){return J(this.o,a)?(delete this.o[a],this.h--,this.I++,this.i.length&gt;2*this.h&amp;&amp;I(this),!0):!1};var I=function(a){if(a.h!=a.i.length){for(var b=0,c=0;b&lt;a.i.length;){var d=a.i[b];J(a.o,d)&amp;&amp;(a.i[c++]=d);b++}a.i.length=c}if(a.h!=a.i.length){for(var e={},c=b=0;b&lt;a.i.length;)d=a.i[b],J(e,d)||(a.i[c++]=d,e[d]=1),b++;a.i.length=c}};g=H.prototype;g.get=function(a,b){return J(this.o,a)?this.o[a]:b};g.set=function(a,b){J(this.o,a)||(this.h++,this.i.push(a),this.I++);this.o[a]=b};g.addAll=function(a){var b;a instanceof H?(b=a.w(),a=a.m()):(b=ka(a),a=ia(a));for(var c=0;c&lt;b.length;c++)this.set(b[c],a[c])};g.forEach=function(a,b){for(var c=this.w(),d=0;d&lt;c.length;d++){var e=c[d],f=this.get(e);a.call(b,f,e,this)}};g.clone=function(){return new H(this)};g.X=function(a){I(this);var b=0,c=this.I,d=this,e=new G;e.next=function(){if(c!=d.I)throw Error(&quot;The map has changed since the iterator was created&quot;);if(b&gt;=d.i.length)throw za;var e=d.i[b++];return a?e:d.o[e]};return e};var J=function(a,b){return Object.prototype.hasOwnProperty.call(a,b)};var Ba=function(a){if(a.m&amp;&amp;&quot;function&quot;==typeof a.m)return a.m();if(m(a))return a.split(&quot;&quot;);if(l(a)){for(var b=[],c=a.length,d=0;d&lt;c;d++)b.push(a[d]);return b}return ia(a)},Ca=function(a,b,c){if(a.forEach&amp;&amp;&quot;function&quot;==typeof a.forEach)a.forEach(b,c);else if(l(a)||m(a))fa(a,b,c);else{var d;if(a.w&amp;&amp;&quot;function&quot;==typeof a.w)d=a.w();else if(a.m&amp;&amp;&quot;function&quot;==typeof a.m)d=void 0;else if(l(a)||m(a)){d=[];for(var e=a.length,f=0;f&lt;e;f++)d.push(f)}else d=ka(a);for(var e=Ba(a),f=e.length,h=0;h&lt;f;h++)b.call(c,e[h],d&amp;&amp;d[h],a)}};var K=function(a,b){this.u=this.C=this.A=&quot;&quot;;this.F=null;this.B=this.s=&quot;&quot;;this.l=this.ba=!1;var c;if(a instanceof K)this.l=void 0!==b?b:a.l,L(this,a.A),c=a.C,M(this),this.C=c,c=a.u,M(this),this.u=c,N(this,a.F),c=a.s,M(this),this.s=c,Da(this,a.v.clone()),c=a.B,M(this),this.B=c;else if(a&amp;&amp;(c=String(a).match(xa))){this.l=!!b;L(this,c[1]||&quot;&quot;,!0);var d=c[2]||&quot;&quot;;M(this);this.C=O(d);d=c[3]||&quot;&quot;;M(this);this.u=O(d,!0);N(this,c[4]);d=c[5]||&quot;&quot;;M(this);this.s=O(d,!0);Da(this,c[6]||&quot;&quot;,!0);c=c[7]||&quot;&quot;;M(this);this.B=O(c)}else this.l=!!b,this.v=new P(null,0,this.l)};K.prototype.toString=function(){var a=[],b=this.A;b&amp;&amp;a.push(Q(b,Ea,!0),&quot;:&quot;);var c=this.u;if(c||&quot;file&quot;==b)a.push(&quot;//&quot;),(b=this.C)&amp;&amp;a.push(Q(b,Ea,!0),&quot;@&quot;),a.push(encodeURIComponent(String(c)).replace(/%25([0-9a-fA-F]{2})/g,&quot;%$1&quot;)),c=this.F,null!=c&amp;&amp;a.push(&quot;:&quot;,String(c));if(c=this.s)this.u&amp;&amp;&quot;/&quot;!=c.charAt(0)&amp;&amp;a.push(&quot;/&quot;),a.push(Q(c,&quot;/&quot;==c.charAt(0)?Fa:Ga,!0));(c=this.v.toString())&amp;&amp;a.push(&quot;?&quot;,c);(c=this.B)&amp;&amp;a.push(&quot;#&quot;,Q(c,Ha));return a.join(&quot;&quot;)};K.prototype.resolve=function(a){var b=this.clone(),c=!!a.A;c?L(b,a.A):c=!!a.C;if(c){var d=a.C;M(b);b.C=d}else c=!!a.u;c?(d=a.u,M(b),b.u=d):c=null!=a.F;d=a.s;if(c)N(b,a.F);else if(c=!!a.s){if(&quot;/&quot;!=d.charAt(0))if(this.u&amp;&amp;!this.s)d=&quot;/&quot;+d;else{var e=b.s.lastIndexOf(&quot;/&quot;);-1!=e&amp;&amp;(d=b.s.substr(0,e+1)+d)}e=d;if(&quot;..&quot;==e||&quot;.&quot;==e)d=&quot;&quot;;else if(q(e,&quot;./&quot;)||q(e,&quot;/.&quot;)){for(var d=0==e.lastIndexOf(&quot;/&quot;,0),e=e.split(&quot;/&quot;),f=[],h=0;h&lt;e.length;){var n=e[h++];&quot;.&quot;==n?d&amp;&amp;h==e.length&amp;&amp;f.push(&quot;&quot;):&quot;..&quot;==n?((1&lt;f.length||1==f.length&amp;&amp;&quot;&quot;!=f[0])&amp;&amp;f.pop(),d&amp;&amp;h==e.length&amp;&amp;f.push(&quot;&quot;)):(f.push(n),d=!0)}d=f.join(&quot;/&quot;)}else d=e}c?(M(b),b.s=d):c=&quot;&quot;!==a.v.toString();c?Da(b,O(a.v.toString())):c=!!a.B;c&amp;&amp;(a=a.B,M(b),b.B=a);return b};K.prototype.clone=function(){return new K(this)};var L=function(a,b,c){M(a);a.A=c?O(b,!0):b;a.A&amp;&amp;(a.A=a.A.replace(/:$/,&quot;&quot;))},N=function(a,b){M(a);if(b){b=Number(b);if(isNaN(b)||0&gt;b)throw Error(&quot;Bad port number &quot;+b);a.F=b}else a.F=null},Da=function(a,b,c){M(a);b instanceof P?(a.v=b,a.v.O(a.l)):(c||(b=Q(b,Ia)),a.v=new P(b,0,a.l))},M=function(a){if(a.ba)throw Error(&quot;Tried to modify a read-only Uri&quot;);};K.prototype.O=function(a){this.l=a;this.v&amp;&amp;this.v.O(a);return this};var O=function(a,b){return a?b?decodeURI(a.replace(/%25/g,&quot;%2525&quot;)):decodeURIComponent(a):&quot;&quot;},Q=function(a,b,c){return m(a)?(a=encodeURI(a).replace(b,Ja),c&amp;&amp;(a=a.replace(/%25([0-9a-fA-F]{2})/g,&quot;%$1&quot;)),a):null},Ja=function(a){a=a.charCodeAt(0);return&quot;%&quot;+(a&gt;&gt;4&amp;15).toString(16)+(a&amp;15).toString(16)},Ea=/[#\/\?@]/g,Ga=/[\#\?:]/g,Fa=/[\#\?]/g,Ia=/[\#\?@]/g,Ha=/#/g,P=function(a,b,c){this.h=this.g=null;this.j=a||null;this.l=!!c},R=function(a){a.g||(a.g=new H,a.h=0,a.j&amp;&amp;ya(a.j,function(b,c){a.add(decodeURIComponent(b.replace(/\+/g,&quot; &quot;)),c)}))};g=P.prototype;g.add=function(a,b){R(this);this.j=null;a=S(this,a);var c=this.g.get(a);c||this.g.set(a,c=[]);c.push(b);this.h+=1;return this};g.remove=function(a){R(this);a=S(this,a);return this.g.G(a)?(this.j=null,this.h-=this.g.get(a).length,this.g.remove(a)):!1};g.clear=function(){this.g=this.j=null;this.h=0};g.G=function(a){R(this);a=S(this,a);return this.g.G(a)};g.w=function(){R(this);for(var a=this.g.m(),b=this.g.w(),c=[],d=0;d&lt;b.length;d++)for(var e=a[d],f=0;f&lt;e.length;f++)c.push(b[d]);return c};g.m=function(a){R(this);var b=[];if(m(a))this.G(a)&amp;&amp;(b=ga(b,this.g.get(S(this,a))));else{a=this.g.m();for(var c=0;c&lt;a.length;c++)b=ga(b,a[c])}return b};g.set=function(a,b){R(this);this.j=null;a=S(this,a);this.G(a)&amp;&amp;(this.h-=this.g.get(a).length);this.g.set(a,[b]);this.h+=1;return this};g.get=function(a,b){var c=a?this.m(a):[];return 0&lt;c.length?String(c[0]):b};g.toString=function(){if(this.j)return this.j;if(!this.g)return&quot;&quot;;for(var a=[],b=this.g.w(),c=0;c&lt;b.length;c++)for(var d=b[c],e=encodeURIComponent(String(d)),d=this.m(d),f=0;f&lt;d.length;f++){var h=e;&quot;&quot;!==d[f]&amp;&amp;(h+=&quot;=&quot;+encodeURIComponent(String(d[f])));a.push(h)}return this.j=a.join(&quot;&amp;&quot;)};g.clone=function(){var a=new P;a.j=this.j;this.g&amp;&amp;(a.g=this.g.clone(),a.h=this.h);return a};var S=function(a,b){var c=String(b);a.l&amp;&amp;(c=c.toLowerCase());return c};P.prototype.O=function(a){a&amp;&amp;!this.l&amp;&amp;(R(this),this.j=null,this.g.forEach(function(a,c){var d=c.toLowerCase();c!=d&amp;&amp;(this.remove(c),this.remove(d),0&lt;a.length&amp;&amp;(this.j=null,this.g.set(S(this,d),ha(a)),this.h+=a.length))},this));this.l=a};P.prototype.extend=function(a){for(var b=0;b&lt;arguments.length;b++)Ca(arguments[b],function(a,b){this.add(b,a)},this)};var W=function(a,b,c,d,e,f,h,n,U){T(C.hidden)?(this.H=&quot;hidden&quot;,this.K=&quot;visibilitychange&quot;):T(C.mozHidden)?(this.H=&quot;mozHidden&quot;,this.K=&quot;mozvisibilitychange&quot;):T(C.msHidden)?(this.H=&quot;msHidden&quot;,this.K=&quot;msvisibilitychange&quot;):T(C.webkitHidden)&amp;&amp;(this.H=&quot;webkitHidden&quot;,this.K=&quot;webkitvisibilitychange&quot;);this.M=!1;this.D=a;this.J=-1;this.V=b;this.W=c;this.ca=d;this.Z=f;this.S=h?&quot;mousedown&quot;:&quot;click&quot;;e&amp;&amp;C[this.H]&amp;&amp;V(this,2);this.$=n;this.Y=U||0;this.P=this.T=this.L=this.R=null;a=p(this.aa,this);wa(C,this.K,a);Ka(this)};W.prototype.aa=function(){if(C[this.H])this.M&amp;&amp;(this.U(),this.J=da(),V(this,0));else{if(-1!=this.J){var a=da()-this.J;a&gt;this.Y&amp;&amp;(this.J=-1,V(this,1,a),null!==this.D&amp;&amp;this.D.registerFinalizeCallback(p(this.D.fireOnObject,this.D,&quot;attempt_survey_trigger&quot;,[&quot;wfocus&quot;,this.W,this.V,this.L,this.T,this.P,a])))}this.Z&amp;&amp;V(this,3)}};var Ka=function(a){if(null!==a.D){var b=p(function(a,b,c){this.L=b.fa().ea();this.L||(a=new K(b.da()),this.L=a.u+a.s);this.T=b.creativeConversionUrl();this.P=b.adGroupCreativeId();this.N(c)},a),c=a.S;a.D.forEachAd(function(a){a.forEachNavigationAdPiece(function(d){a.listen(d,c,b)})})}else{var d=p(a.N,a);wa(D,a.S,d)}};W.prototype.N=function(a){this.R=a.button;this.M=!0;a=p(this.U,this);D.setTimeout(a,5E3)};W.prototype.handleClick=W.prototype.N;W.prototype.U=function(){this.M=!1};var V=function(a,b,c){var d=[&quot;//&quot;,a.ca?&quot;googleads.g.doubleclick.net&quot;:&quot;pagead2.googlesyndication.com&quot;,&quot;/pagead/gen_204?id=wfocus&quot;,&quot;&amp;gqid=&quot;+a.V,&quot;&amp;qqid=&quot;+a.W].join(&quot;&quot;);0==b&amp;&amp;(d+=&quot;&amp;return=0&quot;);1==b&amp;&amp;(d+=&quot;&amp;return=1&amp;timeDelta=&quot;+c,a.$&amp;&amp;(d+=&quot;&amp;cbtn=&quot;+a.R));2==b&amp;&amp;(d+=&quot;&amp;bgload=1&quot;);3==b&amp;&amp;(d+=&quot;&amp;fg=1&quot;);D.google_image_requests||(D.google_image_requests=[]);a=D.document.createElement(&quot;img&quot;);a.src=d;D.google_image_requests.push(a)},T=function(a){return&quot;undefined&quot;!==typeof a};var La=function(a,b,c,d,e,f,h,n){return new W(null,a,b,c,d,e,f,h,n)},X=[&quot;wfocusnhinit&quot;],Y=k;X[0]in Y||!Y.execScript||Y.execScript(&quot;var &quot;+X[0]);for(var Z;X.length&amp;&amp;(Z=X.shift());)X.length||void 0===La?Y=Y[Z]?Y[Z]:Y[Z]={}:Y[Z]=La;}).call(this);wfocusnhinit(&quot;&quot;,&quot;CNyzha2MkM0CFckeaAodQuMFrw&quot;,true,true,true,false,false,0);&lt;/script&gt;&lt;iframe scrolling=&quot;no&quot; frameborder=0 height=0 width=0 src=&quot;https://cm.g.doubleclick.net/push?client=ca-pub-8592253979949884&amp;amp;srn=gdn&quot; style=&quot;position:absolute&quot;&gt;&lt;/iframe&gt;&lt;script type=&quot;text/javascript&quot;&gt;(function(){var k=this,aa=function(a){var b=typeof a;if(&quot;object&quot;==b)if(a){if(a instanceof Array)return&quot;array&quot;;if(a instanceof Object)return b;var c=Object.prototype.toString.call(a);if(&quot;[object Window]&quot;==c)return&quot;object&quot;;if(&quot;[object Array]&quot;==c||&quot;number&quot;==typeof a.length&amp;&amp;&quot;undefined&quot;!=typeof a.splice&amp;&amp;&quot;undefined&quot;!=typeof a.propertyIsEnumerable&amp;&amp;!a.propertyIsEnumerable(&quot;splice&quot;))return&quot;array&quot;;if(&quot;[object Function]&quot;==c||&quot;undefined&quot;!=typeof a.call&amp;&amp;&quot;undefined&quot;!=typeof a.propertyIsEnumerable&amp;&amp;!a.propertyIsEnumerable(&quot;call&quot;))return&quot;function&quot;}else return&quot;null&quot;;else if(&quot;function&quot;==b&amp;&amp;&quot;undefined&quot;==typeof a.call)return&quot;object&quot;;return b},l=function(a){return&quot;string&quot;==typeof a},ba=function(a,b){var c=Array.prototype.slice.call(arguments,1);return function(){var b=c.slice();b.push.apply(b,arguments);return a.apply(this,b)}},q=Date.now||function(){return+new Date},r=function(a,b){var c=a.split(&quot;.&quot;),d=k;c[0]in d||!d.execScript||d.execScript(&quot;var &quot;+c[0]);for(var e;c.length&amp;&amp;(e=c.shift());)c.length||void 0===b?d=d[e]?d[e]:d[e]={}:d[e]=b};var ca=function(a,b,c,d,e){if(e)c=a+(&quot;&amp;&quot;+b+&quot;=&quot;+c);else{var f=&quot;&amp;&quot;+b+&quot;=&quot;,g=a.indexOf(f);0&gt;g?c=a+f+c:(g+=f.length,f=a.indexOf(&quot;&amp;&quot;,g),c=0&lt;=f?a.substring(0,g)+c+a.substring(f):a.substring(0,g)+c)}return 2E3&lt;c.length?void 0!==d?ca(a,b,d,void 0,e):a:c};var da=function(){var a=/[&amp;\?#]exk=([^&amp; ]+)/.exec(t.location.href);return a&amp;&amp;2==a.length?a[1]:null};var ea=String.prototype.trim?function(a){return a.trim()}:function(a){return a.replace(/^[\s\xa0]+|[\s\xa0]+$/g,&quot;&quot;)},ga=function(a,b){for(var c=0,d=ea(String(a)).split(&quot;.&quot;),e=ea(String(b)).split(&quot;.&quot;),f=Math.max(d.length,e.length),g=0;0==c&amp;&amp;g&lt;f;g++){var h=d[g]||&quot;&quot;,m=e[g]||&quot;&quot;,n=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;),P=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;);do{var u=n.exec(h)||[&quot;&quot;,&quot;&quot;,&quot;&quot;],p=P.exec(m)||[&quot;&quot;,&quot;&quot;,&quot;&quot;];if(0==u[0].length&amp;&amp;0==p[0].length)break;c=fa(0==u[1].length?0:parseInt(u[1],10),0==p[1].length?0:parseInt(p[1],10))||fa(0==u[2].length,0==p[2].length)||fa(u[2],p[2])}while(0==c)}return c},fa=function(a,b){return a&lt;b?-1:a&gt;b?1:0};var ha=Array.prototype.indexOf?function(a,b,c){return Array.prototype.indexOf.call(a,b,c)}:function(a,b,c){c=null==c?0:0&gt;c?Math.max(0,a.length+c):c;if(l(a))return l(b)&amp;&amp;1==b.length?a.indexOf(b,c):-1;for(;c&lt;a.length;c++)if(c in a&amp;&amp;a[c]===b)return c;return-1},ia=Array.prototype.forEach?function(a,b,c){Array.prototype.forEach.call(a,b,c)}:function(a,b,c){for(var d=a.length,e=l(a)?a.split(&quot;&quot;):a,f=0;f&lt;d;f++)f in e&amp;&amp;b.call(c,e[f],f,a)},ja=Array.prototype.map?function(a,b,c){return Array.prototype.map.call(a,b,c)}:function(a,b,c){for(var d=a.length,e=Array(d),f=l(a)?a.split(&quot;&quot;):a,g=0;g&lt;d;g++)g in f&amp;&amp;(e[g]=b.call(c,f[g],g,a));return e};var ka=function(a,b){for(var c in a)b.call(void 0,a[c],c,a)},la=function(a,b){return null!==a&amp;&amp;b in a};var v;a:{var ma=k.navigator;if(ma){var na=ma.userAgent;if(na){v=na;break a}}v=&quot;&quot;}var w=function(a){return-1!=v.indexOf(a)},oa=function(a){for(var b=RegExp(&quot;(\\w[\\w ]+)/([^\\s]+)\\s*(?:\\((.*?)\\))?&quot;,&quot;g&quot;),c=[],d;d=b.exec(a);)c.push([d[1],d[2],d[3]||void 0]);return c};var pa=function(){return w(&quot;Trident&quot;)||w(&quot;MSIE&quot;)},x=function(){return(w(&quot;Chrome&quot;)||w(&quot;CriOS&quot;))&amp;&amp;!w(&quot;Edge&quot;)},ra=function(){function a(a){var b;a:{b=d;for(var g=a.length,h=l(a)?a.split(&quot;&quot;):a,m=0;m&lt;g;m++)if(m in h&amp;&amp;b.call(void 0,h[m],m,a)){b=m;break a}b=-1}return c[0&gt;b?null:l(a)?a.charAt(b):a[b]]||&quot;&quot;}var b=v;if(pa())return qa(b);var b=oa(b),c={};ia(b,function(a){c[a[0]]=a[1]});var d=ba(la,c);return w(&quot;Opera&quot;)?a([&quot;Version&quot;,&quot;Opera&quot;]):w(&quot;Edge&quot;)?a([&quot;Edge&quot;]):x()?a([&quot;Chrome&quot;,&quot;CriOS&quot;]):(b=b[2])&amp;&amp;b[1]||&quot;&quot;},qa=function(a){var b=/rv: *([\d\.]*)/.exec(a);if(b&amp;&amp;b[1])return b[1];var b=&quot;&quot;,c=/MSIE +([\d\.]+)/.exec(a);if(c&amp;&amp;c[1])if(a=/Trident\/(\d.\d)/.exec(a),&quot;7.0&quot;==c[1])if(a&amp;&amp;a[1])switch(a[1]){case &quot;4.0&quot;:b=&quot;8.0&quot;;break;case &quot;5.0&quot;:b=&quot;9.0&quot;;break;case &quot;6.0&quot;:b=&quot;10.0&quot;;break;case &quot;7.0&quot;:b=&quot;11.0&quot;}else b=&quot;7.0&quot;;else b=c[1];return b};var ta=function(a){ta[&quot; &quot;](a);return a};ta[&quot; &quot;]=function(){};var ua=function(a,b){for(var c in a)Object.prototype.hasOwnProperty.call(a,c)&amp;&amp;b.call(void 0,a[c],c,a)},wa=function(){var a=va;if(!a)return&quot;&quot;;var b=/.*[&amp;#?]google_debug(=[^&amp;]*)?(&amp;.*)?$/;try{var c=b.exec(decodeURIComponent(a));if(c)return c[1]&amp;&amp;1&lt;c[1].length?c[1].substring(1):&quot;true&quot;}catch(d){}return&quot;&quot;};var xa=function(a,b,c){if(&quot;array&quot;==aa(b))for(var d=0;d&lt;b.length;d++)xa(a,String(b[d]),c);else null!=b&amp;&amp;c.push(&quot;&amp;&quot;,a,&quot;&quot;===b?&quot;&quot;:&quot;=&quot;,encodeURIComponent(String(b)))},ya=function(a,b,c){for(c=c||0;c&lt;b.length;c+=2)xa(b[c],b[c+1],a);return a},za=function(a,b){var c=2==arguments.length?ya([a],arguments[1],0):ya([a],arguments,1);if(c[1]){var d=c[0],e=d.indexOf(&quot;#&quot;);0&lt;=e&amp;&amp;(c.push(d.substr(e)),c[0]=d=d.substr(0,e));e=d.indexOf(&quot;?&quot;);0&gt;e?c[1]=&quot;?&quot;:e==d.length-1&amp;&amp;(c[1]=void 0)}return c.join(&quot;&quot;)};var Aa=function(a,b){this.v=a;this.w=b},Ba=function(a){this.url=a;this.m=!1;this.depth=null};var Ca=function(a,b,c,d){a.addEventListener?a.addEventListener(b,c,d||!1):a.attachEvent&amp;&amp;a.attachEvent(&quot;on&quot;+b,c)};var Da=function(a,b,c,d,e){this.o=c||4E3;this.g=a||&quot;&amp;&quot;;this.G=b||&quot;,$&quot;;this.h=void 0!==d?d:&quot;trn&quot;;this.P=e||null;this.l=!1;this.f={};this.L=0;this.c=[]},Ea=function(a,b){var c={};c[a]=b;return[c]},y=function(a,b,c,d){a.c.push(b);a.f[b]=Ea(c,d)},Ha=function(a,b,c,d){b=b+&quot;//&quot;+c+d;var e=Fa(a)-d.length-0;if(0&gt;e)return&quot;&quot;;a.c.sort(function(a,b){return a-b});d=null;c=&quot;&quot;;for(var f=0;f&lt;a.c.length;f++)for(var g=a.c[f],h=a.f[g],m=0;m&lt;h.length;m++){if(!e){d=null==d?g:d;break}var n=Ga(h[m],a.g,a.G);if(n){n=c+n;if(e&gt;=n.length){e-=n.length;b+=n;c=a.g;break}else a.l&amp;&amp;(c=e,n[c-1]==a.g&amp;&amp;--c,b+=n.substr(0,c),c=a.g,e=0);d=null==d?g:d}}f=&quot;&quot;;a.h&amp;&amp;null!=d&amp;&amp;(f=c+a.h+&quot;=&quot;+(a.P||d));return b+f+&quot;&quot;},Fa=function(a){if(!a.h)return a.o;var b=1,c;for(c in a.f)b=c.length&gt;b?c.length:b;return a.o-a.h.length-b-a.g.length-1},Ga=function(a,b,c,d,e){var f=[];ua(a,function(a,h){var m=Ia(a,b,c,d,e);m&amp;&amp;f.push(h+&quot;=&quot;+m)});return f.join(b)},Ia=function(a,b,c,d,e){if(null==a)return&quot;&quot;;b=b||&quot;&amp;&quot;;c=c||&quot;,$&quot;;&quot;string&quot;==typeof c&amp;&amp;(c=c.split(&quot;&quot;));if(a instanceof Array){if(d=d||0,d&lt;c.length){for(var f=[],g=0;g&lt;a.length;g++)f.push(Ia(a[g],b,c,d+1,e));return f.join(c[d])}}else if(&quot;object&quot;==typeof a)return e=e||0,2&gt;e?encodeURIComponent(Ga(a,b,c,d,e+1)):&quot;...&quot;;return encodeURIComponent(String(a))};var Ja=function(a,b,c,d,e){try{var f;c instanceof Da?f=c:(f=new Da,ua(c,function(a,b){var c=f,d=c.L++,e=Ea(b,a);c.c.push(d);c.f[d]=e}));if((d?a.O:Math.random())&lt;(e||a.H)){var g=Ha(f,a.N,a.I,a.M+b+&quot;&amp;&quot;);z(k,g)}}catch(h){}},z=function(a,b,c){a.google_image_requests||(a.google_image_requests=[]);var d=a.document.createElement(&quot;img&quot;);if(c){var e=function(a){c(a);a=e;d.removeEventListener?d.removeEventListener(&quot;load&quot;,a,!1):d.detachEvent&amp;&amp;d.detachEvent(&quot;onload&quot;,a);a=e;d.removeEventListener?d.removeEventListener(&quot;error&quot;,a,!1):d.detachEvent&amp;&amp;d.detachEvent(&quot;onerror&quot;,a)};Ca(d,&quot;load&quot;,e);Ca(d,&quot;error&quot;,e)}d.src=b;a.google_image_requests.push(d)};var Ka=function(a,b,c){this.u=a;this.K=b;this.i=c;this.j=null;this.J=this.s;this.A=!1},La=function(a,b,c){this.message=a;this.fileName=b||&quot;&quot;;this.lineNumber=c||-1},Na=function(a,b,c){var d;try{d=c()}catch(g){var e=a.i;try{var f=Ma(g),e=a.J.call(a,b,f,void 0,void 0)}catch(h){a.s(&quot;pAR&quot;,h)}if(!e)throw g;}finally{}return d},A=function(a,b){var c=Oa;return function(){for(var d=[],e=0;e&lt;arguments.length;++e)d[e]=arguments[e];return Na(c,a,function(){return b.apply(void 0,d)})}};Ka.prototype.s=function(a,b,c,d,e){try{var f=e||this.K,g=new Da;g.l=!0;y(g,1,&quot;context&quot;,a);b instanceof La||(b=Ma(b));y(g,2,&quot;msg&quot;,b.message.substring(0,512));b.fileName&amp;&amp;y(g,3,&quot;file&quot;,b.fileName);0&lt;b.lineNumber&amp;&amp;y(g,4,&quot;line&quot;,b.lineNumber.toString());b={};if(this.j)try{this.j(b)}catch(I){}if(d)try{d(b)}catch(I){}d=[b];g.c.push(5);g.f[5]=d;var h;e=k;d=[];var m,n=null;do{b=e;var P;try{var u;if(u=!!b&amp;&amp;null!=b.location.href)b:{try{ta(b.foo);u=!0;break b}catch(I){}u=!1}P=u}catch(I){P=!1}P?(m=b.location.href,n=b.document.referrer||null):(m=n,n=null);d.push(new Ba(m));try{e=b.parent}catch(I){e=null}}while(e&amp;&amp;b!=e);m=0;for(var p=d.length-1;m&lt;=p;++m)d[m].depth=p-m;b=k;if(b.location&amp;&amp;b.location.ancestorOrigins&amp;&amp;b.location.ancestorOrigins.length==d.length-1)for(m=1;m&lt;d.length;++m){var E=d[m];E.url||(E.url=b.location.ancestorOrigins[m-1],E.m=!0)}for(var sa=d.length-1,p=null,E=sa;0&lt;=E;--E){var J=d[E];if(J.url&amp;&amp;!J.m){p=J;break}}var J=null,Vb=d.length&amp;&amp;d[sa].url;p&amp;&amp;0==p.depth||!Vb||(J=d[sa]);h=new Aa(p,J);h.w&amp;&amp;y(g,6,&quot;top&quot;,h.w.url||&quot;&quot;);y(g,7,&quot;url&quot;,h.v.url||&quot;&quot;);Ja(this.u,f,g,this.A,c)}catch(I){try{Ja(this.u,f,{context:&quot;ecmserr&quot;,rctx:a,msg:Pa(I),url:h.v.url},this.A,c)}catch(sc){}}return this.i};var Ma=function(a){return new La(Pa(a),a.fileName,a.lineNumber)},Pa=function(a){var b=a.toString();a.name&amp;&amp;-1==b.indexOf(a.name)&amp;&amp;(b+=&quot;: &quot;+a.name);a.message&amp;&amp;-1==b.indexOf(a.message)&amp;&amp;(b+=&quot;: &quot;+a.message);if(a.stack){a=a.stack;var c=b;try{-1==a.indexOf(c)&amp;&amp;(a=c+&quot;\n&quot;+a);for(var d;a!=d;)d=a,a=a.replace(/((https?:\/..*\/)[^\/:]*:\d+(?:.|\n)*)\2/,&quot;$1&quot;);b=a.replace(/\n */g,&quot;\n&quot;)}catch(e){b=c}}return b};var Qa=function(){return w(&quot;iPhone&quot;)&amp;&amp;!w(&quot;iPod&quot;)&amp;&amp;!w(&quot;iPad&quot;)};var Ra=w(&quot;Opera&quot;),B=pa(),Sa=w(&quot;Edge&quot;),C=w(&quot;Gecko&quot;)&amp;&amp;!(-1!=v.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;!w(&quot;Edge&quot;))&amp;&amp;!(w(&quot;Trident&quot;)||w(&quot;MSIE&quot;))&amp;&amp;!w(&quot;Edge&quot;),Ta=-1!=v.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;!w(&quot;Edge&quot;),Ua=function(){var a=k.document;return a?a.documentMode:void 0},Va;a:{var Wa=&quot;&quot;,Xa=function(){var a=v;if(C)return/rv\:([^\);]+)(\)|;)/.exec(a);if(Sa)return/Edge\/([\d\.]+)/.exec(a);if(B)return/\b(?:MSIE|rv)[: ]([^\);]+)(\)|;)/.exec(a);if(Ta)return/WebKit\/(\S+)/.exec(a);if(Ra)return/(?:Version)[ \/]?(\S+)/.exec(a)}();Xa&amp;&amp;(Wa=Xa?Xa[1]:&quot;&quot;);if(B){var Ya=Ua();if(null!=Ya&amp;&amp;Ya&gt;parseFloat(Wa)){Va=String(Ya);break a}}Va=Wa}var Za=Va,$a={},D=function(a){return $a[a]||($a[a]=0&lt;=ga(Za,a))},ab=k.document,bb=ab&amp;&amp;B?Ua()||(&quot;CSS1Compat&quot;==ab.compatMode?parseInt(Za,10):5):void 0;var F=function(a,b){this.width=a;this.height=b};F.prototype.clone=function(){return new F(this.width,this.height)};F.prototype.ceil=function(){this.width=Math.ceil(this.width);this.height=Math.ceil(this.height);return this};F.prototype.floor=function(){this.width=Math.floor(this.width);this.height=Math.floor(this.height);return this};F.prototype.round=function(){this.width=Math.round(this.width);this.height=Math.round(this.height);return this};F.prototype.scale=function(a,b){this.width*=a;this.height*=&quot;number&quot;==typeof b?b:a;return this};!C&amp;&amp;!B||B&amp;&amp;9&lt;=Number(bb)||C&amp;&amp;D(&quot;1.9.1&quot;);B&amp;&amp;D(&quot;9&quot;);var G=document,t=window;var H=null,cb=function(){if(!G.body)return!1;if(!H){var a=G.createElement(&quot;iframe&quot;);a.style.display=&quot;none&quot;;a.id=&quot;anonIframe&quot;;H=a;G.body.appendChild(a)}return!0};var Oa;Oa=new Ka(new function(){this.N=&quot;http:&quot;===t.location.protocol?&quot;http:&quot;:&quot;https:&quot;;this.I=&quot;pagead2.googlesyndication.com&quot;;this.M=&quot;/pagead/gen_204?id=&quot;;this.H=.01;this.O=Math.random()},&quot;jserror&quot;,!0);var K=function(a,b){return A(a,b)};B&amp;&amp;D(&quot;9&quot;);!Ta||D(&quot;528&quot;);C&amp;&amp;D(&quot;1.9b&quot;)||B&amp;&amp;D(&quot;8&quot;)||Ra&amp;&amp;D(&quot;9.5&quot;)||Ta&amp;&amp;D(&quot;528&quot;);C&amp;&amp;!D(&quot;8&quot;)||B&amp;&amp;D(&quot;9&quot;);var db=0,L={},fb=function(a){var b=L.imageLoadingEnabled;if(null!=b)a(b);else{var c=!1;eb(function(b,e){delete L[e];c||(c=!0,null!=L.imageLoadingEnabled||(L.imageLoadingEnabled=b),a(b))})}},eb=function(a){var b=new Image,c,d=&quot;&quot;+db++;L[d]=b;b.onload=function(){clearTimeout(c);a(!0,d)};c=setTimeout(function(){a(!1,d)},300);b.src=&quot;data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==&quot;},gb=function(a){if(a){var b=document.createElement(&quot;OBJECT&quot;);b.data=a;b.width=1;b.height=1;b.style.visibility=&quot;hidden&quot;;var c=&quot;&quot;+db++;L[c]=b;b.onload=b.onerror=function(){delete L[c]};document.body.appendChild(b)}},hb=function(a){if(a){var b=new Image,c=&quot;&quot;+db++;L[c]=b;b.onload=b.onerror=function(){delete L[c]};b.src=a}},ib=function(a){a&amp;&amp;fb(function(b){b?hb(a):gb(a)})};var jb={F:&quot;ud=1&quot;,D:&quot;ts=0&quot;,S:&quot;sc=1&quot;,B:&quot;gz=1&quot;,C:&quot;op=1&quot;,T:&quot;efp=1&quot;,R:&quot;rda=1&quot;};if(G&amp;&amp;G.URL){var va=G.URL,kb=!(va&amp;&amp;0&lt;wa().length);Oa.i=kb}var M=function(a,b,c,d){Ca(a,b,A(d||&quot;osd_or_lidar::&quot;+b,c),void 0)},lb=function(a,b,c){if(!(0&gt;=b)){var d=0,e=function(){a();d++;d&lt;b&amp;&amp;t.setTimeout(A(c,e),100)};e()}};var N=function(a,b){this.b=a||0;this.a=b||&quot;&quot;},mb=function(a,b){a.b&amp;&amp;(b[4]=a.b);a.a&amp;&amp;(b[12]=a.a)};N.prototype.match=function(a){return(this.b||this.a)&amp;&amp;(a.b||a.a)?this.a||a.a?this.a==a.a:this.b||a.b?this.b==a.b:!1:!1};N.prototype.toString=function(){var a=&quot;&quot;+this.b;this.a&amp;&amp;(a+=&quot;-&quot;+this.a);return a};var nb=function(){var a=O,b=[];a.b&amp;&amp;b.push(&quot;adk=&quot;+a.b);a.a&amp;&amp;b.push(&quot;exk=&quot;+a.a);return b},ob=function(a){var b=[];ka(a,function(a,d){var e=encodeURIComponent(d),f=a;l(f)&amp;&amp;(f=encodeURIComponent(f));b.push(e+&quot;=&quot;+f)});b.push(&quot;24=&quot;+(new Date).getTime());return b.join(&quot;\n&quot;)},pb=0,qb=0,rb=function(a){var b=0,c=t;try{if(c&amp;&amp;c.Goog_AdSense_getAdAdapterInstance)return c}catch(e){}var d=c.location&amp;&amp;c.location.ancestorOrigins;if(!(void 0===d||d&amp;&amp;d.length))return null;for(;c&amp;&amp;5&gt;b;){try{if(c.google_osd_static_frame)return c}catch(e){}try{if(c.aswift_0&amp;&amp;(!a||c.aswift_0.google_osd_static_frame))return c.aswift_0}catch(e){}b++;c=c!=c.parent?c.parent:null}return null},sb=function(a,b,c,d,e){if(10&lt;qb)t.clearInterval(pb);else if(++qb,t.postMessage&amp;&amp;(b.b||b.a)){var f=rb(!0);if(f){var g={};mb(b,g);g[0]=&quot;goog_request_monitoring&quot;;g[6]=a;g[16]=c;d&amp;&amp;d.length&amp;&amp;(g[17]=d.join(&quot;,&quot;));e&amp;&amp;(g[19]=e);try{var h=ob(g);f.postMessage(h,&quot;*&quot;)}catch(m){}}}},tb=function(a){var b=rb(!1),c=!b;!b&amp;&amp;t&amp;&amp;(b=t.parent);if(b&amp;&amp;b.postMessage)try{b.postMessage(a,&quot;*&quot;),c&amp;&amp;t.postMessage(a,&quot;*&quot;)}catch(d){}};var Q=!1,ub=function(a){if(a=a.match(/[\d]+/g))a.length=3};(function(){if(navigator.plugins&amp;&amp;navigator.plugins.length){var a=navigator.plugins[&quot;Shockwave Flash&quot;];if(a&amp;&amp;(Q=!0,a.description)){ub(a.description);return}if(navigator.plugins[&quot;Shockwave Flash 2.0&quot;]){Q=!0;return}}if(navigator.mimeTypes&amp;&amp;navigator.mimeTypes.length&amp;&amp;(a=navigator.mimeTypes[&quot;application/x-shockwave-flash&quot;],Q=!!a&amp;&amp;a.enabledPlugin)){ub(a.enabledPlugin.description);return}try{var b=new ActiveXObject(&quot;ShockwaveFlash.ShockwaveFlash.7&quot;);Q=!0;ub(b.GetVariable(&quot;$version&quot;));return}catch(c){}try{b=new ActiveXObject(&quot;ShockwaveFlash.ShockwaveFlash.6&quot;);Q=!0;return}catch(c){}try{b=new ActiveXObject(&quot;ShockwaveFlash.ShockwaveFlash&quot;),Q=!0,ub(b.GetVariable(&quot;$version&quot;))}catch(c){}})();var vb=w(&quot;Firefox&quot;),wb=Qa()||w(&quot;iPod&quot;),xb=w(&quot;iPad&quot;),yb=w(&quot;Android&quot;)&amp;&amp;!(x()||w(&quot;Firefox&quot;)||w(&quot;Opera&quot;)||w(&quot;Silk&quot;)),zb=x(),Ab=w(&quot;Safari&quot;)&amp;&amp;!(x()||w(&quot;Coast&quot;)||w(&quot;Opera&quot;)||w(&quot;Edge&quot;)||w(&quot;Silk&quot;)||w(&quot;Android&quot;))&amp;&amp;!(Qa()||w(&quot;iPad&quot;)||w(&quot;iPod&quot;));var R=function(a){return(a=a.exec(v))?a[1]:&quot;&quot;};(function(){if(vb)return R(/Firefox\/([0-9.]+)/);if(B||Sa||Ra)return Za;if(zb)return R(/Chrome\/([0-9.]+)/);if(Ab&amp;&amp;!(Qa()||w(&quot;iPad&quot;)||w(&quot;iPod&quot;)))return R(/Version\/([0-9.]+)/);if(wb||xb){var a=/Version\/(\S+).*Mobile\/(\S+)/.exec(v);if(a)return a[1]+&quot;.&quot;+a[2]}else if(yb)return(a=R(/Android\s+([0-9.]+)/))?a:R(/Version\/([0-9.]+)/);return&quot;&quot;})();var Cb=function(){var a=t.parent&amp;&amp;t.parent!=t,b=a&amp;&amp;0&lt;=&quot;//tpc.googlesyndication.com&quot;.indexOf(t.location.host);if(a&amp;&amp;t.name&amp;&amp;0==t.name.indexOf(&quot;google_ads_iframe&quot;)||b){var c;a=t||t;try{var d;if(a.document&amp;&amp;!a.document.body)d=new F(-1,-1);else{var e=(a||window).document,f=&quot;CSS1Compat&quot;==e.compatMode?e.documentElement:e.body;d=(new F(f.clientWidth,f.clientHeight)).round()}c=d}catch(g){c=new F(-12245933,-12245933)}return Bb(c)}c=t.document.getElementsByTagName(&quot;SCRIPT&quot;);return 0&lt;c.length&amp;&amp;(c=c[c.length-1],c.parentElement&amp;&amp;c.parentElement.id&amp;&amp;0&lt;c.parentElement.id.indexOf(&quot;_ad_container&quot;))?Bb(void 0,c.parentElement):null},Bb=function(a,b){var c=Db(&quot;IMG&quot;,a,b);return c||(c=Db(&quot;IFRAME&quot;,a,b))?c:(c=Db(&quot;OBJECT&quot;,a,b))?c:null},Db=function(a,b,c){var d=document;c=c||d;d=a&amp;&amp;&quot;*&quot;!=a?a.toUpperCase():&quot;&quot;;c=c.querySelectorAll&amp;&amp;c.querySelector&amp;&amp;d?c.querySelectorAll(d+&quot;&quot;):c.getElementsByTagName(d||&quot;*&quot;);for(d=0;d&lt;c.length;d++){var e=c[d];if(&quot;OBJECT&quot;==a)a:{var f=e.getAttribute(&quot;height&quot;);if(null!=f&amp;&amp;0&lt;f&amp;&amp;0==e.clientHeight)for(var f=e.children,g=0;g&lt;f.length;g++){var h=f[g];if(&quot;OBJECT&quot;==h.nodeName||&quot;EMBED&quot;==h.nodeName){e=h;break a}}}f=e.clientHeight;g=e.clientWidth;if(h=b)h=new F(g,f),h=Math.abs(b.width-h.width)&lt;.1*b.width&amp;&amp;Math.abs(b.height-h.height)&lt;.1*b.height;if(h||!b&amp;&amp;10&lt;f&amp;&amp;10&lt;g)return e}return null};var S=0,Eb=&quot;&quot;,Fb=[],T=!1,U=!1,V=!1,Gb=!0,Hb=!1,Ib=!1,Jb=!1,Kb=!1,Lb=!1,Mb=!1,Nb=0,Ob=0,W=0,Pb=[],O=null,Qb=&quot;&quot;,Rb=[],Sb=null,Tb=[],Ub=!1,Wb=&quot;&quot;,Xb=&quot;&quot;,Yb=(new Date).getTime(),Zb=!1,$b=&quot;&quot;,ac=!1,bc=[&quot;1&quot;,&quot;0&quot;,&quot;3&quot;],X=0,Y=0,cc=0,dc=&quot;&quot;,fc=function(a,b,c){T&amp;&amp;(Gb||3!=(c||3)||Jb)&amp;&amp;ec(a,b,!0);if(V||U&amp;&amp;Ib)ec(a,b),U=V=!1},gc=function(){var a=Sb;return a?2!=a():!0},ec=function(a,b,c){if((b=b||Qb)&amp;&amp;!Ub&amp;&amp;(2==Y||c)&amp;&amp;gc()){for(var d=0;d&lt;Fb.length;++d){var e=hc(Fb[d],b,c),f=a;Hb?ib(e):z(f,e,void 0)}Lb=!0;c?T=!1:Ub=!0}},ic=function(a,b){var c=[];a&amp;&amp;c.push(&quot;avi=&quot;+a);b&amp;&amp;c.push(&quot;cid=&quot;+b);return c.length?&quot;//pagead2.googlesyndication.com/activeview?&quot;+c.join(&quot;&amp;&quot;):&quot;//pagead2.googlesyndication.com/activeview&quot;},hc=function(a,b,c){c=c?&quot;osdim&quot;:V?&quot;osd2&quot;:&quot;osdtos&quot;;a=[a,-1&lt;a.indexOf(&quot;?&quot;)?&quot;&amp;id=&quot;:&quot;?id=&quot;,c];&quot;osd2&quot;==c&amp;&amp;U&amp;&amp;Ib&amp;&amp;a.push(&quot;&amp;ts=1&quot;);a.push(&quot;&amp;ti=1&quot;);a.push(&quot;&amp;&quot;,b);a.push(&quot;&amp;uc=&quot;+cc);Zb?a.push(&quot;&amp;tgt=&quot;+$b):a.push(&quot;&amp;tgt=nf&quot;);a.push(&quot;&amp;cl=&quot;+(ac?1:0));Mb&amp;&amp;(a.push(&quot;&amp;lop=1&quot;),b=q()-Nb,a.push(&quot;&amp;tslp=&quot;+b));b=a.join(&quot;&quot;);for(a=0;a&lt;Rb.length;a++){try{var d=Rb[a]()}catch(e){}c=&quot;max_length&quot;;2&lt;=d.length&amp;&amp;(3==d.length&amp;&amp;(c=d[2]),b=ca(b,encodeURIComponent(d[0]),encodeURIComponent(d[1]),c))}2E3&lt;b.length&amp;&amp;(b=b.substring(0,2E3));return b},Z=function(a){if(Wb){try{var b=ca(Wb,&quot;vi&quot;,a);cb()&amp;&amp;z(H.contentWindow,b,void 0)}catch(c){}0&lt;=ha(bc,a)&amp;&amp;(Wb=&quot;&quot;)}},jc=function(){Z(&quot;-1&quot;)},lc=function(a){if(a&amp;&amp;a.data&amp;&amp;l(a.data)){var b;var c=a.data;if(l(c)){b={};for(var c=c.split(&quot;\n&quot;),d=0;d&lt;c.length;d++){var e=c[d].indexOf(&quot;=&quot;);if(!(0&gt;=e)){var f=Number(c[d].substr(0,e)),e=c[d].substr(e+1);switch(f){case 5:case 8:case 11:case 15:case 16:case 18:e=&quot;true&quot;==e;break;case 4:case 7:case 6:case 14:case 20:case 21:case 22:case 23:case 24:e=Number(e);break;case 3:case 19:if(&quot;function&quot;==aa(decodeURIComponent))try{e=decodeURIComponent(e)}catch(h){throw Error(&quot;Error: URI malformed: &quot;+e);}break;case 17:e=ja(decodeURIComponent(e).split(&quot;,&quot;),Number)}b[f]=e}}b=b[0]?b:null}else b=null;if(b&amp;&amp;(c=new N(b[4],b[12]),O&amp;&amp;O.match(c))){for(c=0;c&lt;Tb.length;c++)Tb[c](b);void 0!=b[18]&amp;&amp;(Jb=b[18],Jb||2!=W||(W=3,kc()));c=b[0];if(&quot;goog_acknowledge_monitoring&quot;==c)t.clearInterval(pb),X=2;else if(&quot;goog_get_mode&quot;==c){X=1;d={};O&amp;&amp;mb(O,d);d[0]=&quot;goog_provide_mode&quot;;d[6]=Y;d[19]=dc;d[16]=U;try{var g=ob(d);a.source.postMessage(g,a.origin)}catch(h){}t.clearInterval(pb);X=2}else&quot;goog_update_data&quot;==c?(Qb=b[3],++cc):&quot;goog_image_request&quot;==c&amp;&amp;(fc(t,b[3]),b[5]||b[11]||Z(&quot;0&quot;));if(&quot;goog_update_data&quot;==c||&quot;goog_image_request&quot;==c)(1==Y||2==Y||T)&amp;&amp;b[5]&amp;&amp;(a=1==b[15]&amp;&amp;&quot;goog_update_data&quot;==c,Ib=!0,Z(&quot;1&quot;),Xb&amp;&amp;gc()&amp;&amp;(g=Xb,cb()&amp;&amp;z(H.contentWindow,g,void 0),Xb=&quot;&quot;),T&amp;&amp;!a&amp;&amp;(ec(t,void 0,!0),Kb=!0,Ob=q()),3==W&amp;&amp;(W=4,kc()),T||1!=Y||(Ub=!0)),(1==Y||2==Y||T)&amp;&amp;b[11]&amp;&amp;(U=!1,Z(&quot;3&quot;),T&amp;&amp;(ec(t,void 0,!0),1==W&amp;&amp;Jb&amp;&amp;(W=2)))}}},kc=function(){var a=t,b=W;0!=b&amp;&amp;1!=b&amp;&amp;mc(a,&quot;osdim&quot;,&quot;zas=&quot;+b)},mc=function(a,b,c){var d=[];Eb&amp;&amp;d.push(&quot;avi=&quot;+Eb);d.push(&quot;id=&quot;+b);d.push(&quot;ovr_value=&quot;+S);Mb&amp;&amp;d.push(&quot;lop=1&quot;);O&amp;&amp;(d=d.concat(nb()));d.push(&quot;tt=&quot;+((new Date).getTime()-Yb));d.push(c);a.document&amp;&amp;a.document.referrer&amp;&amp;d.push(&quot;ref=&quot;+encodeURIComponent(a.document.referrer));try{z(a,&quot;//pagead2.googlesyndication.com/pagead/gen_204?&quot;+d.join(&quot;&amp;&quot;),void 0)}catch(e){}},nc=function(){fc(t);Z(&quot;0&quot;);2&gt;X&amp;&amp;!U&amp;&amp;2==Y&amp;&amp;mc(t,&quot;osd2&quot;,&quot;hs=&quot;+X)},oc=function(){var a={};mb(O,a);a[0]=&quot;goog_dom_content_loaded&quot;;var b=ob(a);try{lb(function(){tb(b)},10,&quot;osd_listener::ldcl_int&quot;)}catch(c){}},pc=function(){var a={};mb(O,a);a[0]=&quot;goog_creative_loaded&quot;;var b=ob(a);lb(function(){tb(b)},10,&quot;osd_listener::lcel_int&quot;);ac=!0},qc=function(a){if(l(a)){a=a.split(&quot;&amp;&quot;);for(var b=a.length-1;0&lt;=b;b--){var c=a[b],d=jb;c==d.F?(Gb=!1,a.splice(b,1)):c==d.B?(W=1,a.splice(b,1)):c==d.D?(U=!1,a.splice(b,1)):c==d.C&amp;&amp;(Hb=!0,a.splice(b,1))}dc=a.join(&quot;&amp;&quot;)}},rc=function(){if(!Zb){var a=Cb();a&amp;&amp;(Zb=!0,$b=a.tagName,a.complete||a.naturalWidth?pc():M(a,&quot;load&quot;,pc,&quot;osd_listener::creative_load&quot;))}};r(&quot;osdlfm&quot;,K(&quot;osd_listener::init&quot;,function(a,b,c,d,e,f,g,h,m){S=a;Wb=b;Xb=d;T=f;g&amp;&amp;qc(g);U=f;1==h?Pb.push(947190538):2==h?Pb.push(947190541):3==h&amp;&amp;Pb.push(947190542);O=new N(e,da());M(t,&quot;load&quot;,jc,&quot;osd_listener::load&quot;);M(t,&quot;message&quot;,lc,&quot;osd_listener::message&quot;);Eb=c||&quot;&quot;;Fb=[ic(c,m)];M(t,&quot;unload&quot;,nc,&quot;osd_listener::unload&quot;);var n=t.document;!n.readyState||&quot;complete&quot;!=n.readyState&amp;&amp;&quot;loaded&quot;!=n.readyState?!pa()||0&lt;=ga(ra(),11)?M(n,&quot;DOMContentLoaded&quot;,oc,&quot;osd_listener::dcl&quot;):M(n,&quot;readystatechange&quot;,function(){&quot;complete&quot;!=n.readyState&amp;&amp;&quot;loaded&quot;!=n.readyState||oc()},&quot;osd_listener::rsc&quot;):oc();-1==S?Y=f?3:1:-2==S?Y=3:0&lt;S&amp;&amp;(Y=2,V=!0);U&amp;&amp;!V&amp;&amp;-1==S&amp;&amp;(Y=2);O&amp;&amp;(O.b||O.a)&amp;&amp;(X=1,pb=t.setInterval(A(&quot;osd_proto::reqm_int&quot;,ba(sb,Y,O,U,Pb,dc)),500));lb(rc,5,&quot;osd_listener:sfc&quot;)}));r(&quot;osdlac&quot;,K(&quot;osd_listener::lac_ex&quot;,function(a){Rb.push(a)}));r(&quot;osdlamrc&quot;,K(&quot;osd_listener::lamrc_ex&quot;,function(a){Tb.push(a)}));r(&quot;osdsir&quot;,A(&quot;osd_listener::sir_ex&quot;,fc));r(&quot;osdacrc&quot;,K(&quot;osd_listener::acrc_ex&quot;,function(a){Sb=a}));r(&quot;osdpcls&quot;,K(&quot;osd_listener::acrc_ex&quot;,function(a){if(!a||t==t.top||Ub||Lb&amp;&amp;!Kb)return!1;Mb=!0;a=/^(http[s]?:)?\/\//.test(a)?a:ic(a);if(Kb){var b=hc(a,Qb,!0),c=q()-Ob,b=za(b,&quot;tsvp&quot;,c),c=t;Hb?ib(b):z(c,b,void 0)}Fb.push(a);Nb=q();return!0}));}).call(this);osdlfm(-1,&#39;&#39;,&#39;BETQA37BTV5zIKsm9oAPCxpf4CgCx5Oal4AIAABABOAHIAQPgAgDIA5kE4AQBoAYDwhMGGPfy6s0D&#39;,&#39;https://securepubads.g.doubleclick.net/pagead/adview?ai\x3dC_Eok37BTV5zIKsm9oAPCxpf4CuT07uxEseTmpeACwabTrrcFEAEgt4HZF2AzoAH38urNA8gBA-ACAKgDAaoE7AFP0LV50te1w8n6nuJ9sLINWqsA1rrvxEmaZIqSmpL4HSLQg4W4zpVhb2fEoqkMZGpPHgOj-iqILtw3GkCCmHm02TDOCxzdlx5wSDw7OVLxuMrU6lns0ztc1-tJ0XizdtwSXSG7qCDebAItjdkBfJRTDO3MJYegi-p0p8eeiRGynOWJuoezLJh8URy1YJm49EqymMxBM3Zeh7vt2Y3QZtbglCTvOS2IAtNwjZCzWyvp97PLAiVYgp0asr53KYRTRVGyHFXaie7MOUP2ts5TFTR4Hzg3mPm_16W4YE1Ifk7B2O4sL3x5m3zsRebJ0eAEAYgGAaAGA4AH8YyVMqgHpr4b2AcB2BMD\x26sigh\x3dN2Whvpzjk0o\x26vt\x3d1&#39;,875014947,true,&#39;ud\x3d1\x26la\x3d0\x26&#39;,3,&#39;5GgXp1m3C8pTes_hn5EEhSvBze4&#39;,&#39;&#39;);&lt;/script&gt;&lt;script&gt;if (window.top &amp;&amp; window.top.postMessage) {window.top.postMessage(&#39;{&quot;googMsgType&quot;: &quot;adpnt&quot;}&#39;, &#39;*&#39;);}&lt;/script&gt;&lt;script&gt;var ad = buildImageAd(adSlot, 0);adSlot.addAd(ad);adSlot.finalize(&#39;google_image_div&#39;);&lt;/script&gt;&lt;script&gt;(function(_){var im=function(){this.yi=[];this.Up={}};im.prototype.report=function(){for(var a=[],b=0;b&lt;this.yi.length;++b)a.push(jm(this.yi[b]));return a};var jm=function(a){var b=[a.key,a.value];_.t(a.gn)&amp;&amp;b.push(a.gn);return b},km={};var lm={1:0,2:1,4:8,5:6,8:11,9:2,6:9,34:25,26:15,3:7,20:12,24:26,33:11,25:0,40:9},mm=function(a,b,c,d){var e=lm[b];4==b&amp;&amp;(b=(d=d.currentTarget)?d.getAttribute(&quot;data-absm&quot;):c.getAttribute(b,&quot;data-absm&quot;),&quot;e&quot;==b?e=12:&quot;db&quot;==b?e=29:&quot;dd&quot;==b&amp;&amp;(e=30));(0,window.ja)(a,e)},nm=function(a){return function(){a()}},om=function(a){return a.report()};_.u(&quot;registerAd&quot;,function(a,b){_.t(km[b])||(km[b]=new im);a.registerClickUrlModifier(_.ga(om,km[b]));for(var c=[1,2,4,8,6,9,5,3,20,34,26,24,33,25,40],d=0;d&lt;c.length;d++)a.listen(c[d],&quot;mousedown&quot;,nm(_.ga(window.st,b))),a.listen(c[d],&quot;click&quot;,_.ga(mm,b));a.listen(15,&quot;click&quot;,_.ga(mm,b));a.listen(15,&quot;mousedown&quot;,nm(_.ga(window.st,b)));a.listen(0,&quot;mouseover&quot;,nm(_.ga(window.ss,b)));a.listen(0,&quot;focus&quot;,nm(_.ga(window.ss,b)));a.listen(1,&quot;focus&quot;,nm(_.ga(window.ss,b)));a.listen(1,&quot;mouseover&quot;,nm(_.ga(window.ss,b)));return a},void 0);_.u(&quot;css&quot;,function(a,b,c,d,e){a=km[a];_.t(a)&amp;&amp;(!_.t(a.Up[b])||d?(d=a.yi.length,a.Up[b]=d,a.yi[d]={key:b,value:c,gn:e}):(b=a.yi[a.Up[b]],b.value=c,b.gn=e))},void 0);})(window.hydra=window.hydra||{});&lt;/script&gt;&lt;script&gt;registerAd(ad, &#39;aw0&#39;);&lt;/script&gt; &lt;style&gt;.feedback_container {width: 100%;height: 100%;position: absolute;top:0;left:0;display: none;z-index: 9020;background-color: white;}.feedback_page {font-family: &quot;Arial&quot;;font-size: 13px;margin: 9px 12px 9px 12px;}.feedback_title {font-weight: bold;color: #000000;}.feedback_page a {font-weight: normal;color: #3366cc;}.feedback_description {color: #666666;line-height: 16px;margin: 2px 0 2px 0;}.feedback_closing {color: #0367ff;line-height: 16px;margin: 2px 0 2px 0;}.feedback_logo {position: absolute;right: 0;bottom: 0;margin: 0 12px 9px 0;}.feedback_logo img {height: 15px;}.survey_description {color: #666666;line-height: 17px;margin: 10px 0 2px 0;}.survey {color: #666666;line-height: 20px;}.survey_option {float: left;margin: 0 15px 0 0;}.survey_option input {margin: 0;vertical-align: middle;}.survey_option_text {margin: 0 0 0 5px;line-height: 17px;vertical-align: bottom;}.survey_option:hover {background-color: lightblue;cursor: default;}&lt;/style&gt;&lt;div id=&quot;cbtf&quot; class=&quot;feedback_container&quot;&gt;&lt;div class=&quot;feedback_page&quot;&gt;&lt;div id=&quot;mtadmas&quot;&gt;&lt;div class=&quot;feedback_title&quot;&gt;It&amp;#39;s gone. &lt;a id=&quot;mtadmaundo&quot; href=&quot;javascript:void(0)&quot;&gt;Undo&lt;/a&gt;&lt;/div&gt;&lt;div class=&quot;survey_description&quot;&gt;What was wrong with this ad?&lt;/div&gt;&lt;div class=&quot;survey&quot; id=&quot;survey_0&quot;&gt;&lt;label&gt;&lt;div class=&quot;survey_option&quot;&gt;&lt;input type=&quot;radio&quot; name=&quot;surveyOptions&quot; value=&quot;12&quot;&gt;&lt;span class=&quot;survey_option_text&quot;&gt;Not interested&lt;/span&gt;&lt;/div&gt;&lt;/label&gt;&lt;label&gt;&lt;div class=&quot;survey_option&quot;&gt;&lt;input type=&quot;radio&quot; name=&quot;surveyOptions&quot; value=&quot;11&quot;&gt;&lt;span class=&quot;survey_option_text&quot;&gt;Already purchased&lt;/span&gt;&lt;/div&gt;&lt;/label&gt;&lt;label&gt;&lt;div class=&quot;survey_option&quot;&gt;&lt;input type=&quot;radio&quot; name=&quot;surveyOptions&quot; value=&quot;2&quot;&gt;&lt;span class=&quot;survey_option_text&quot;&gt;Repetitive&lt;/span&gt;&lt;/div&gt;&lt;/label&gt;&lt;/div&gt;&lt;/div&gt;&lt;div id=&quot;mtadmac&quot; style=&quot;display:none&quot;&gt;&lt;div class=&quot;feedback_title&quot;&gt;Thanks for the feedback! &lt;a id=&quot;mtadmback&quot; href=&quot;javascript:void(0)&quot;&gt;Back&lt;/a&gt;&lt;/div&gt;&lt;div class=&quot;feedback_description&quot;&gt;We’ll review this ad to improve your experience in the future.&lt;/div&gt;&lt;div class=&quot;feedback_description&quot;&gt;Help us show you better ads by updating your &lt;a href=&quot;https://www.google.com/settings/ads/anonymous&quot; target=&quot;_blank&quot;&gt;ads settings&lt;/a&gt;.&lt;/div&gt;&lt;div id=&quot;ad-feedback-closing&quot; style=&quot;display:none&quot; class=&quot;feedback_closing&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;div id=&quot;mtadmpc&quot; style=&quot;display:none&quot;&gt;&lt;div class=&quot;feedback_title&quot;&gt;Thanks for the feedback! &lt;a id=&quot;mtadmpundo&quot; href=&quot;javascript:void(0)&quot;&gt;Undo&lt;/a&gt;&lt;/div&gt;&lt;div class=&quot;feedback_description&quot;&gt;We’ll use your feedback to review ads on this site.&lt;/div&gt;&lt;div class=&quot;feedback_description&quot;&gt;Help us show you better ads by updating your &lt;a href=&quot;https://www.google.com/settings/ads/anonymous&quot; target=&quot;_blank&quot;&gt;ads settings&lt;/a&gt;.&lt;/div&gt;&lt;div id=&quot;pub-feedback-closing&quot; style=&quot;display:none&quot; class=&quot;feedback_closing&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;span id=&quot;feedback-closing-template&quot; style=&quot;display:none&quot;&gt;Closing ad: %1$d&lt;/span&gt;&lt;div class=&quot;feedback_logo&quot;&gt;&lt;img src=&quot;//www.gstatic.com/images/branding/googlelogo/1x/googlelogo_color_112x36dp.png&quot;/&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;script&gt;(function(){var h,k=this,l=function(a,b){var c=a.split(&quot;.&quot;),d=k;c[0]in d||!d.execScript||d.execScript(&quot;var &quot;+c[0]);for(var e;c.length&amp;&amp;(e=c.shift());)c.length||void 0===b?d=d[e]?d[e]:d[e]={}:d[e]=b},m=function(a){var b=typeof a;if(&quot;object&quot;==b)if(a){if(a instanceof Array)return&quot;array&quot;;if(a instanceof Object)return b;var c=Object.prototype.toString.call(a);if(&quot;[object Window]&quot;==c)return&quot;object&quot;;if(&quot;[object Array]&quot;==c||&quot;number&quot;==typeof a.length&amp;&amp;&quot;undefined&quot;!=typeof a.splice&amp;&amp;&quot;undefined&quot;!=typeof a.propertyIsEnumerable&amp;&amp;!a.propertyIsEnumerable(&quot;splice&quot;))return&quot;array&quot;;if(&quot;[object Function]&quot;==c||&quot;undefined&quot;!=typeof a.call&amp;&amp;&quot;undefined&quot;!=typeof a.propertyIsEnumerable&amp;&amp;!a.propertyIsEnumerable(&quot;call&quot;))return&quot;function&quot;}else return&quot;null&quot;;else if(&quot;function&quot;==b&amp;&amp;&quot;undefined&quot;==typeof a.call)return&quot;object&quot;;return b},aa=function(a){var b=m(a);return&quot;array&quot;==b||&quot;object&quot;==b&amp;&amp;&quot;number&quot;==typeof a.length},p=function(a){return&quot;string&quot;==typeof a},q=function(a){var b=typeof a;return&quot;object&quot;==b&amp;&amp;null!=a||&quot;function&quot;==b},ba=function(a,b,c){return a.call.apply(a.bind,arguments)},ca=function(a,b,c){if(!a)throw Error();if(2&lt;arguments.length){var d=Array.prototype.slice.call(arguments,2);return function(){var c=Array.prototype.slice.call(arguments);Array.prototype.unshift.apply(c,d);return a.apply(b,c)}}return function(){return a.apply(b,arguments)}},t=function(a,b,c){t=Function.prototype.bind&amp;&amp;-1!=Function.prototype.bind.toString().indexOf(&quot;native code&quot;)?ba:ca;return t.apply(null,arguments)};var u=function(a,b){var c=parseInt(a,10);return isNaN(c)?b:c};var x;var y=String.prototype.trim?function(a){return a.trim()}:function(a){return a.replace(/^[\s\xa0]+|[\s\xa0]+$/g,&quot;&quot;)},z=function(a,b){return a&lt;b?-1:a&gt;b?1:0};var da=Array.prototype.indexOf?function(a,b,c){return Array.prototype.indexOf.call(a,b,c)}:function(a,b,c){c=null==c?0:0&gt;c?Math.max(0,a.length+c):c;if(p(a))return p(b)&amp;&amp;1==b.length?a.indexOf(b,c):-1;for(;c&lt;a.length;c++)if(c in a&amp;&amp;a[c]===b)return c;return-1},ea=Array.prototype.forEach?function(a,b,c){Array.prototype.forEach.call(a,b,c)}:function(a,b,c){for(var d=a.length,e=p(a)?a.split(&quot;&quot;):a,f=0;f&lt;d;f++)f in e&amp;&amp;b.call(c,e[f],f,a)},fa=function(a){var b=a.length;if(0&lt;b){for(var c=Array(b),d=0;d&lt;b;d++)c[d]=a[d];return c}return[]};var A;a:{var B=k.navigator;if(B){var C=B.userAgent;if(C){A=C;break a}}A=&quot;&quot;};var D=function(a){D[&quot; &quot;](a);return a};D[&quot; &quot;]=function(){};var E=function(a){var b=window;return b.getComputedStyle?b.getComputedStyle(a,null):a.currentStyle};var F=function(a,b){a.addEventListener?a.addEventListener(&quot;click&quot;,b,!1):a.attachEvent&amp;&amp;a.attachEvent(&quot;onclick&quot;,b)};var G=function(a){var b=window;b.google_image_requests||(b.google_image_requests=[]);var c=b.document.createElement(&quot;img&quot;);c.src=a;b.google_image_requests.push(c)};var ga=-1!=A.indexOf(&quot;Opera&quot;),H=-1!=A.indexOf(&quot;Trident&quot;)||-1!=A.indexOf(&quot;MSIE&quot;),ha=-1!=A.indexOf(&quot;Edge&quot;),I=-1!=A.indexOf(&quot;Gecko&quot;)&amp;&amp;!(-1!=A.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;-1==A.indexOf(&quot;Edge&quot;))&amp;&amp;!(-1!=A.indexOf(&quot;Trident&quot;)||-1!=A.indexOf(&quot;MSIE&quot;))&amp;&amp;-1==A.indexOf(&quot;Edge&quot;),ia=-1!=A.toLowerCase().indexOf(&quot;webkit&quot;)&amp;&amp;-1==A.indexOf(&quot;Edge&quot;),J=function(){var a=k.document;return a?a.documentMode:void 0},K;a:{var L=&quot;&quot;,M=function(){var a=A;if(I)return/rv\:([^\);]+)(\)|;)/.exec(a);if(ha)return/Edge\/([\d\.]+)/.exec(a);if(H)return/\b(?:MSIE|rv)[: ]([^\);]+)(\)|;)/.exec(a);if(ia)return/WebKit\/(\S+)/.exec(a);if(ga)return/(?:Version)[ \/]?(\S+)/.exec(a)}();M&amp;&amp;(L=M?M[1]:&quot;&quot;);if(H){var N=J();if(null!=N&amp;&amp;N&gt;parseFloat(L)){K=String(N);break a}}K=L}var O=K,P={},Q=function(a){var b;if(!(b=P[a])){b=0;for(var c=y(String(O)).split(&quot;.&quot;),d=y(String(a)).split(&quot;.&quot;),e=Math.max(c.length,d.length),f=0;0==b&amp;&amp;f&lt;e;f++){var g=c[f]||&quot;&quot;,n=d[f]||&quot;&quot;,v=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;),va=RegExp(&quot;(\\d*)(\\D*)&quot;,&quot;g&quot;);do{var r=v.exec(g)||[&quot;&quot;,&quot;&quot;,&quot;&quot;],w=va.exec(n)||[&quot;&quot;,&quot;&quot;,&quot;&quot;];if(0==r[0].length&amp;&amp;0==w[0].length)break;b=z(0==r[1].length?0:parseInt(r[1],10),0==w[1].length?0:parseInt(w[1],10))||z(0==r[2].length,0==w[2].length)||z(r[2],w[2])}while(0==b)}b=P[a]=0&lt;=b}return b},R=k.document,ka=R&amp;&amp;H?J()||(&quot;CSS1Compat&quot;==R.compatMode?parseInt(O,10):5):void 0;var S;if(!(S=!I&amp;&amp;!H)){var T;if(T=H)T=9&lt;=Number(ka);S=T}S||I&amp;&amp;Q(&quot;1.9.1&quot;);var la=H&amp;&amp;!Q(&quot;9&quot;);var ma=function(a){var b=document;return p(a)?b.getElementById(a):a},oa=function(a,b){var c=b||document;return c.querySelectorAll&amp;&amp;c.querySelector?c.querySelectorAll(&quot;.&quot;+a):na(a,b)},na=function(a,b){var c,d,e,f;c=document;c=b||c;if(c.querySelectorAll&amp;&amp;c.querySelector&amp;&amp;a)return c.querySelectorAll(&quot;&quot;+(a?&quot;.&quot;+a:&quot;&quot;));if(a&amp;&amp;c.getElementsByClassName){var g=c.getElementsByClassName(a);return g}g=c.getElementsByTagName(&quot;*&quot;);if(a){f={};for(d=e=0;c=g[d];d++){var n=c.className,v;if(v=&quot;function&quot;==typeof n.split)v=0&lt;=da(n.split(/\s+/),a);v&amp;&amp;(f[e++]=c)}f.length=e;return f}return g},qa=function(a,b,c){function d(c){c&amp;&amp;b.appendChild(p(c)?a.createTextNode(c):c)}for(var e=1;e&lt;c.length;e++){var f=c[e];!aa(f)||q(f)&amp;&amp;0&lt;f.nodeType?d(f):ea(pa(f)?fa(f):f,d)}},ra={SCRIPT:1,STYLE:1,HEAD:1,IFRAME:1,OBJECT:1},sa={IMG:&quot; &quot;,BR:&quot;\n&quot;},ua=function(){var a=document.getElementById(&quot;feedback-closing-template&quot;);if(la&amp;&amp;null!==a&amp;&amp;&quot;innerText&quot;in a)a=a.innerText.replace(/(\r\n|\r|\n)/g,&quot;\n&quot;);else{var b=[];ta(a,b,!0);a=b.join(&quot;&quot;)}a=a.replace(/ \xAD /g,&quot; &quot;).replace(/\xAD/g,&quot;&quot;);a=a.replace(/\u200B/g,&quot;&quot;);la||(a=a.replace(/ +/g,&quot; &quot;));&quot; &quot;!=a&amp;&amp;(a=a.replace(/^\s*/,&quot;&quot;));return a},ta=function(a,b,c){if(!(a.nodeName in ra))if(3==a.nodeType)c?b.push(String(a.nodeValue).replace(/(\r\n|\r|\n)/g,&quot;&quot;)):b.push(a.nodeValue);else if(a.nodeName in sa)b.push(sa[a.nodeName]);else for(a=a.firstChild;a;)ta(a,b,c),a=a.nextSibling},pa=function(a){if(a&amp;&amp;&quot;number&quot;==typeof a.length){if(q(a))return&quot;function&quot;==typeof a.item||&quot;string&quot;==typeof a.item;if(&quot;function&quot;==m(a))return&quot;function&quot;==typeof a.item}return!1},wa=function(a){this.v=a||k.document||document},xa=function(a,b){return oa(&quot;feedback_description&quot;,b||a.v)};h=wa.prototype;h.createElement=function(a){return this.v.createElement(a)};h.createTextNode=function(a){return this.v.createTextNode(String(a))};h.appendChild=function(a,b){a.appendChild(b)};h.append=function(a,b){qa(9==a.nodeType?a:a.ownerDocument||a.document,a,arguments)};h.canHaveChildren=function(a){if(1!=a.nodeType)return!1;switch(a.tagName){case &quot;APPLET&quot;:case &quot;AREA&quot;:case &quot;BASE&quot;:case &quot;BR&quot;:case &quot;COL&quot;:case &quot;COMMAND&quot;:case &quot;EMBED&quot;:case &quot;FRAME&quot;:case &quot;HR&quot;:case &quot;IMG&quot;:case &quot;INPUT&quot;:case &quot;IFRAME&quot;:case &quot;ISINDEX&quot;:case &quot;KEYGEN&quot;:case &quot;LINK&quot;:case &quot;NOFRAMES&quot;:case &quot;NOSCRIPT&quot;:case &quot;META&quot;:case &quot;OBJECT&quot;:case &quot;PARAM&quot;:case &quot;SCRIPT&quot;:case &quot;SOURCE&quot;:case &quot;STYLE&quot;:case &quot;TRACK&quot;:case &quot;WBR&quot;:return!1}return!0};h.removeNode=function(a){return a&amp;&amp;a.parentNode?a.parentNode.removeChild(a):null};h.contains=function(a,b){if(!a||!b)return!1;if(a.contains&amp;&amp;1==b.nodeType)return a==b||a.contains(b);if(&quot;undefined&quot;!=typeof a.compareDocumentPosition)return a==b||!!(a.compareDocumentPosition(b)&amp;16);for(;b&amp;&amp;a!=b;)b=b.parentNode;return b==a};var ya=function(a){a=String(a);if(/^\s*$/.test(a)?0:/^[\],:{}\s\u2028\u2029]*$/.test(a.replace(/\\[&quot;\\\/bfnrtu]/g,&quot;@&quot;).replace(/(?:&quot;[^&quot;\\\n\r\u2028\u2029\x00-\x08\x0a-\x1f]*&quot;|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)[\s\u2028\u2029]*(?=:|,|]|}|$)/g,&quot;]&quot;).replace(/(?:^|:|,)(?:[\s\u2028\u2029]*\[)+/g,&quot;&quot;)))try{return eval(&quot;(&quot;+a+&quot;)&quot;)}catch(b){}throw Error(&quot;Invalid JSON string: &quot;+a);},Aa=function(a){var b=[];U(new za,a,b);return b.join(&quot;&quot;)},za=function(){this.m=void 0},U=function(a,b,c){if(null==b)c.push(&quot;null&quot;);else{if(&quot;object&quot;==typeof b){if(&quot;array&quot;==m(b)){var d=b;b=d.length;c.push(&quot;[&quot;);for(var e=&quot;&quot;,f=0;f&lt;b;f++)c.push(e),e=d[f],U(a,a.m?a.m.call(d,String(f),e):e,c),e=&quot;,&quot;;c.push(&quot;]&quot;);return}if(b instanceof String||b instanceof Number||b instanceof Boolean)b=b.valueOf();else{c.push(&quot;{&quot;);f=&quot;&quot;;for(d in b)Object.prototype.hasOwnProperty.call(b,d)&amp;&amp;(e=b[d],&quot;function&quot;!=typeof e&amp;&amp;(c.push(f),Ba(d,c),c.push(&quot;:&quot;),U(a,a.m?a.m.call(b,d,e):e,c),f=&quot;,&quot;));c.push(&quot;}&quot;);return}}switch(typeof b){case &quot;string&quot;:Ba(b,c);break;case &quot;number&quot;:c.push(isFinite(b)&amp;&amp;!isNaN(b)?String(b):&quot;null&quot;);break;case &quot;boolean&quot;:c.push(String(b));break;case &quot;function&quot;:c.push(&quot;null&quot;);break;default:throw Error(&quot;Unknown type: &quot;+typeof b);}}},Ca={&#39;&quot;&#39;:&#39;\\&quot;&#39;,&quot;\\&quot;:&quot;\\\\&quot;,&quot;/&quot;:&quot;\\/&quot;,&quot;\b&quot;:&quot;\\b&quot;,&quot;\f&quot;:&quot;\\f&quot;,&quot;\n&quot;:&quot;\\n&quot;,&quot;\r&quot;:&quot;\\r&quot;,&quot;\t&quot;:&quot;\\t&quot;,&quot;\x0B&quot;:&quot;\\u000b&quot;},Da=/\uffff/.test(&quot;\uffff&quot;)?/[\\\&quot;\x00-\x1f\x7f-\uffff]/g:/[\\\&quot;\x00-\x1f\x7f-\xff]/g,Ba=function(a,b){b.push(&#39;&quot;&#39;,a.replace(Da,function(a){var b=Ca[a];b||(b=&quot;\\u&quot;+(a.charCodeAt(0)|65536).toString(16).substr(1),Ca[a]=b);return b}),&#39;&quot;&#39;)};var Ea=function(a){var b={};if(a&amp;&amp;a.key_value){a=a.key_value;for(var c=0;c&lt;a.length;c++){var d=a[c];if(&quot;key&quot;in d&amp;&amp;&quot;value&quot;in d){var e=d.value;b[d.key]=null==e?null:String(e)}}}return b};var Fa=function(){var a=document.body,b=a&amp;&amp;a.ownerDocument,c=b&amp;&amp;(b.defaultView||b.parentWindow),d;if(d=c){var e;d=c.top;try{var f;if(f=!!d&amp;&amp;null!=d.location.href)b:{try{D(d.foo);f=!0;break b}catch(n){}f=!1}e=f}catch(n){e=!1}d=e?c.top:null}c=d;this.N=!!c;this.boundingClientRect=null;try{this.boundingClientRect=a&amp;&amp;a.getBoundingClientRect()}catch(n){}e=a;f=0;for(d=this.boundingClientRect;e;)try{d&amp;&amp;(f+=d.top);var g=e.ownerDocument;e=(g.defaultView||g.parentWindow).frameElement;d=e.getBoundingClientRect()}catch(n){break}this.O=f;c=c||k;this.X=(&quot;CSS1Compat&quot;==c.document.compatMode?c.document.documentElement:c.document.body).clientHeight;b=b&amp;&amp;({visible:1,hidden:2,prerender:3,preview:4}[b.webkitVisibilityState||b.mozVisibilityState||b.visibilityState||&quot;&quot;]||0);this.Y=!!a&amp;&amp;!(2==b||3==b)&amp;&amp;!(this.boundingClientRect.top&gt;=this.boundingClientRect.bottom&amp;&amp;this.boundingClientRect.left&gt;=this.boundingClientRect.right)},Ga=function(){var a=new Fa;return a.N&amp;&amp;(!a.Y||a.O&gt;=a.X)};var V=function(a,b){this.F=a;this.l=0;this.j=document.getElementById(&quot;mtadmas&quot;);this.L=document.getElementById(&quot;mtadmaundo&quot;);this.B=document.getElementById(&quot;mtadmac&quot;);this.C=document.getElementById(&quot;mtadmback&quot;);this.I=document.getElementById(&quot;mtadmpc&quot;);this.M=document.getElementById(&quot;mtadmpundo&quot;);this.w=document.getElementById(&quot;mtadmpunclose&quot;);this.K=this.s=this.G=this.D=null;this.u=0;this.h=null;this.i=!1;this.o=null;this.T=b?b.getAdsLength():1;(this.g=b)&amp;&amp;this.g.registerWidget(this,0);this.H=0},Ha=function(a){for(var b=document.getElementsByName(&quot;surveyOptions&quot;),c=0;c&lt;b.length;c++)F(b[c],t(a.U,a,b[c].value));a.L&amp;&amp;F(a.L,t(a.A,a,&quot;1&quot;));a.M&amp;&amp;F(a.M,t(a.A,a,&quot;3&quot;));a.w&amp;&amp;F(a.w,t(a.V,a));a.C&amp;&amp;F(a.C,t(a.back,a));a.g&amp;&amp;(a.g.listenOnObject(&quot;mute_option_selected&quot;,t(a.J,a)),a.g.forEachAd(t(function(a){a.listenOnObject(&quot;multislot_mute_collapse&quot;,t(this.S,this));a.listenOnObject(&quot;multislot_mute_collapse_undo&quot;,t(this.R,this))},a)))};V.prototype.J=function(a){this.D=a.close_button_token;this.G=a.creative_conversion_url;this.s=a.ablation_config;this.K=a.undo_callback;this.u=a.creative_index||0;this.g&amp;&amp;(this.o=this.g.getAd(this.u));if(1===a.type){a=oa(&quot;survey&quot;);for(var b=&quot;survey_&quot;+this.u,c=0;c&lt;a.length;c++)a[c].style.display=a[c].id==b?&quot;block&quot;:&quot;none&quot;;a=document.getElementsByName(&quot;surveyOptions&quot;);for(b=0;b&lt;a.length;b++)a[b].checked=!1;this.j.style.display=&quot;block&quot;;W(this);X(this)}else 0===a.type&amp;&amp;(this.I.style.display=&quot;block&quot;,this.j.style.display=&quot;none&quot;,W(this),Ia(this,document.getElementById(&quot;pub-feedback-closing&quot;),this.s))};var Y=function(a){a.h&amp;&amp;(window.clearInterval(a.h),a.h=null,a.i=!1);ma(&quot;pub-feedback-closing&quot;).style.display=&quot;none&quot;;ma(&quot;ad-feedback-closing&quot;).style.display=&quot;none&quot;};V.prototype.A=function(a){this.i||(Y(this),G(Z(this,&quot;user_feedback_undo&quot;,a)),this.K())};V.prototype.V=function(){var a={msg_type:&quot;resize-me&quot;};a.key_value=[{key:&quot;r_nh&quot;,value:String(this.H)},{key:&quot;r_str&quot;,value:&quot;animate&quot;}];a=Aa(a);window.top.postMessage(a,&quot;*&quot;);this.i=!1;this.A(&quot;3&quot;)};V.prototype.back=function(){this.i||(Y(this),this.j.style.display=&quot;block&quot;,W(this),X(this))};V.prototype.U=function(a){this.B.style.display=&quot;block&quot;;this.j.style.display=&quot;none&quot;;X(this);G(Z(this,&quot;mute_survey_option&quot;,a));a=document.getElementById(&quot;ad-feedback-closing&quot;);this.l&lt;this.T-1&amp;&amp;this.g?Ja(this,a):Ia(this,a,this.s)};var Z=function(a,b,c){return a.G+&quot;&amp;label=&quot;+b+&quot;&amp;cbt=&quot;+a.D+&quot;&amp;label_instance=&quot;+c},W=function(a){a.B.style.display=&quot;none&quot;},X=function(a){a.I.style.display=&quot;none&quot;},Ka=function(a,b,c,d,e,f){var g=c+d;if(!(0&gt;e||e&gt;g||a.h)){var n=ua();c=t(function(){var a=&quot;&quot;;g&lt;=d&amp;&amp;0&lt;g&amp;&amp;(a=n.replace(&quot;%1$d&quot;,String(g)));b.style.display=a?&quot;inline&quot;:&quot;none&quot;;if(&quot;textContent&quot;in b)b.textContent=a;else if(3==b.nodeType)b.data=a;else if(b.firstChild&amp;&amp;3==b.firstChild.nodeType){for(;b.lastChild!=b.firstChild;)b.removeChild(b.lastChild);b.firstChild.data=a}else{for(var c;c=b.firstChild;)b.removeChild(c);b.appendChild((9==b.nodeType?b:b.ownerDocument||b.document).createTextNode(String(a)))}if(g==e)try{this.i=!0,f()}catch(r){}0&gt;=g&amp;&amp;Y(this);g--},a);c();0&lt;=g&amp;&amp;(a.h=window.setInterval(c,1E3))}},Ia=function(a,b,c){if(c&amp;&amp;window.top&amp;&amp;window.top.postMessage){var d=ya(c),e=Ea(d),f=&quot;resize-me&quot;==d.msg_type&amp;&amp;&quot;animate&quot;==e.r_str;if(&quot;ablate-me&quot;==d.msg_type&amp;&amp;e[&quot;collapse-after-close&quot;]||f&amp;&amp;!Ga())a.w&amp;&amp;(a.H=window.innerHeight,f=document.getElementById(&quot;cbtf&quot;),f=xa(x||(x=new wa),f)[1],f=La(a.P,f),c=Ma(d,f)),Ka(a,b,u(e[&quot;secs-to-countdown&quot;],1),u(e.countdown,0),u(e[&quot;message-tick&quot;],1),function(){window.top.postMessage(c,&quot;*&quot;)})}},Ma=function(a,b){if(!isNaN(b)&amp;&amp;isFinite(b)){var c=!1;if(a.key_value){for(var d=a.key_value,e=0;e&lt;d.length;e++){var f=d[e];if(&quot;key&quot;in f&amp;&amp;&quot;value&quot;in f&amp;&amp;&quot;r_nh&quot;==f.key){c=!0;f.value=b.toString();break}}c||d.push({key:&quot;r_nh&quot;,value:b.toString()})}}return Aa(a)};V.prototype.P=function(a){var b=E(a);a=E(a.parentNode.parentNode);return parseInt(b.height,10)+parseInt(b.marginTop,10)+parseInt(a.marginTop,10)};var La=function(a,b){for(var c=[],d=b;d&amp;&amp;&quot;BODY&quot;!=d.tagName;d=d.parentNode)d.style&amp;&amp;&quot;block&quot;!=d.style.display&amp;&amp;(c.push({el:d,val:d.style.display}),d.style.display=&quot;block&quot;);for(var d=a(b),e;e=c.pop();)void 0!==e.W&amp;&amp;(e.Z.style.display=e.W);return d},Ja=function(a,b){Ka(a,b,1,0,0,t(function(){var a={creative_index:this.o.getIndex(),undo_pingback_url:Z(this,&quot;user_feedback_undo&quot;,&quot;1&quot;)};this.o.fireOnObject(&quot;multislot_mute_collapse&quot;,a)},a))};h=V.prototype;h.S=function(){this.l++;this.g.resetAll()};h.R=function(){0&lt;this.l&amp;&amp;this.l--};h.show=function(){this.F.style.display=&quot;block&quot;};h.hide=function(){this.F.style.display=&quot;none&quot;};h.reset=function(){this.hide()};V.prototype.show=V.prototype.show;V.prototype.hide=V.prototype.hide;V.prototype.reset=V.prototype.reset;V.prototype.setupSurveyPage=V.prototype.J;l(&quot;cmtads&quot;,function(){var a=null,b=document.getElementById(&quot;cbtf&quot;);b&amp;&amp;(a=new V(b,window.adSlot),Ha(a));a&amp;&amp;l(&quot;muteSurvey&quot;,a);return a});}).call(this);cmtads();&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;{&quot;uid&quot;:1,&quot;hostPeerName&quot;:&quot;http://packetlife.net&quot;,&quot;initialGeometry&quot;:&quot;{\&quot;windowCoords_t\&quot;:0,\&quot;windowCoords_r\&quot;:1366,\&quot;windowCoords_b\&quot;:728,\&quot;windowCoords_l\&quot;:0,\&quot;frameCoords_t\&quot;:224,\&quot;frameCoords_r\&quot;:1038.5,\&quot;frameCoords_b\&quot;:314,\&quot;frameCoords_l\&quot;:310.5,\&quot;styleZIndex\&quot;:\&quot;auto\&quot;,\&quot;allowedExpansion_t\&quot;:224,\&quot;allowedExpansion_r\&quot;:310.5,\&quot;allowedExpansion_b\&quot;:353,\&quot;allowedExpansion_l\&quot;:310.5,\&quot;xInView\&quot;:1,\&quot;yInView\&quot;:1}&quot;,&quot;permissions&quot;:&quot;{\&quot;expandByOverlay\&quot;:false,\&quot;expandByPush\&quot;:false,\&quot;readCookie\&quot;:false,\&quot;writeCookie\&quot;:false}&quot;,&quot;metadata&quot;:&quot;{\&quot;shared\&quot;:{\&quot;sf_ver\&quot;:\&quot;1-0-2\&quot;,\&quot;ck_on\&quot;:1,\&quot;flash_ver\&quot;:\&quot;21.0.0\&quot;}}&quot;,&quot;reportCreativeGeometry&quot;:false}" scrolling="no" marginwidth="0" marginheight="0" width="728" height="90" data-is-safeframe="true" style="border: 0px; vertical-align: bottom;"></iframe></div><iframe id="google_ads_iframe_/3265105/PacketLife_Blog_Top_728x90_0__hidden__" title="" name="google_ads_iframe_/3265105/PacketLife_Blog_Top_728x90_0__hidden__" width="0" height="0" scrolling="no" marginwidth="0" marginheight="0" frameborder="0" src="javascript:&quot;&lt;html&gt;&lt;body style=&#39;background:transparent&#39;&gt;&lt;/body&gt;&lt;/html&gt;&quot;" style="border: 0px; vertical-align: bottom; visibility: hidden; display: none;" src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/saved_resource.html"></iframe></div>
+
+
+        
+<div class="row">
+  <div class="col-md-2">
+  
+  </div>
+  <div class="col-md-8">
+  
+
+
+
+
+
+
+<h1 class="page-header">Understanding TCP Sequence and Acknowledgment Numbers</h1>
+<h5 class="text-muted">By <a href="http://packetlife.net/users/stretch/">stretch</a> | Monday, June 7, 2010 at 2:15 a.m. UTC</h5>
+<div class="article">
+<div><p>If you're reading this, odds are that you're already familiar with TCP's infamous "three-way handshake," or "SYN, SYN/ACK, ACK." Unfortunately, that's where TCP education ends for many networkers. Despite its age, TCP is a relatively complex protocol and well worth knowing intimately. This article aims to help you become more comfortable examining TCP sequence and acknowledgement numbers in the <a href="http://www.wireshark.org/">Wireshark</a> packet analyzer.</p>
+<p>Before we start, be sure to open <a href="http://media.packetlife.net/media/blog/attachments/424/TCP_example.cap">the example capture</a> in Wireshark and play along.</p>
+<p>The example capture contains a single HTTP request to a web server, in which the client web browser requests a single image file, and the server returns an HTTP/1.1 200 (OK) response which includes the file requested. You can right-click on any of the TCP packets within this capture and select <strong>Follow TCP Stream</strong> to open the raw contents of the TCP stream in a separate window for inspection. Traffic from the client is shown in red, and traffic from the server in blue.</p>
+<p><img src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/follow_tcp_stream.png" alt="follow_tcp_stream.png" class="center-block"></p>
+<!--break-->
+
+<h3>The Three-Way Handshake</h3>
+<p>TCP utilizes a number of flags, or 1-bit boolean fields, in its header to control the state of a connection. The three we're most interested in here are:</p>
+<ul><li><strong>SYN</strong> - (Synchronize) Initiates a connection</li>
+<li><strong>FIN</strong> - (Final) Cleanly terminates a connection</li>
+<li><strong>ACK</strong> - Acknowledges received data</li>
+</ul><p>As we'll see, a packet can have multiple flags set.</p>
+<p>Select packet #1 in Wireshark and expand the TCP layer analysis in the middle pane, and further expand the "Flags" field within the TCP header. Here we can see all of the TCP flags broken down. Note that the SYN flag is on (set to 1).</p>
+<p><img src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/tcp_syn.png" alt="tcp_syn.png" class="center-block"></p>
+<p>Now do the same for packet #2. Notice that it has two flags set: ACK to acknowledge the receipt of the client's SYN packet, and SYN to indicate that the server also wishes to establish a TCP connection.</p>
+<p><img src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/tcp_synack.png" alt="tcp_synack.png" class="center-block"></p>
+<p>Packet #3, from the client, has only the ACK flag set. These three packets complete the initial TCP three-way handshake.</p>
+<h3>Sequence and Acknowledgment Numbers</h3>
+<p>The client on either side of a TCP session maintains a 32-bit <em>sequence number</em> it uses to keep track of how much data it has sent. This sequence number is included on each transmitted packet, and acknowledged by the opposite host as an <em>acknowledgement number</em> to inform the sending host that the transmitted data was received successfully.</p>
+<p>When a host initiates a TCP session, its initial sequence number is effectively random; it may be any value between 0 and 4,294,967,295, inclusive. However, protocol analyzers like Wireshark will typically display <em>relative</em> sequence and acknowledgement numbers in place of the actual values. These numbers are relative to the initial sequence number of that stream. This is handy, as it is much easier to keep track of relatively small, predictable numbers rather than the actual numbers sent on the wire.</p>
+<p>For example, the initial relative sequence number shown in packet #1 is 0 (naturally), while the ASCII decode in the third pane shows that the actual sequence number is 0xf61c6cbe, or 4129057982 decimal.</p>
+<p><img src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/relative_sequence_numbers.png" alt="relative_sequence_numbers.png" class="center-block"></p>
+<p>The display of relative sequence numbers can optionally be disabled by navigating to <strong>Edit &gt; Preferences...</strong> and un-checking <strong>Relative sequence numbers and window scaling</strong> under TCP protocol preferences. However, be aware that the remainder of this article will reference relative sequence and acknowledgement numbers only.</p>
+<p>To better understand how sequence and acknowledgement numbers are used throughout the duration of a TCP session, we can utilize Wireshark's built-in flow graphing ability. Navigate to <strong>Statistics &gt; Flow Graph...</strong>, select <strong>TCP flow</strong> and click <strong>OK</strong>. Wireshark automatically builds a graphical summary of the TCP flow.</p>
+<p><img src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/tcp_flow.png" alt="tcp_flow.png" class="center-block"></p>
+<p>Each row represents a single TCP packet. The left column indicates the direction of the packet, TCP ports, segment length, and the flag(s) set. The column at right lists the relative sequence and acknowledgement numbers in decimal. Selecting a row in this column also highlights the corresponding packet in the main window.</p>
+<p>We can use this flow graph to better understand how sequence and acknowledgement numbers work.</p>
+<h4>Packet #1</h4>
+<p>Each side of a TCP session starts out with a (relative) sequence number of zero. Likewise, the acknowledgement number is also zero, as there is not yet a complementary side of the conversation to acknowledge.</p>
+<p>(Note: The version of Wireshark used for this demonstration, 1.2.7, shows the acknowledgement number as an apparently random number. This believed to be a software bug; the initial acknowledgement number of a session should always be zero, as you can see from inspecting the hex dump of the packet.)</p>
+<h4>Packet #2</h4>
+<p>The server responds to the client with a sequence number of zero, as this is its first packet in this TCP session, and a relative acknowledgement number of 1. The acknowledgement number is set to 1 to indicate the receipt of the client's SYN flag in packet #1.</p>
+<p>Notice that the acknowledgement number has been increased by 1 although no payload data has yet been sent by the client. This is because the presence of the SYN or FIN flag in a received packet triggers an increase of 1 in the sequence. (This does not interfere with the accounting of payload data, because packets with the SYN or FIN flag set do not carry a payload.)</p>
+<h4>Packet #3</h4>
+<p>Like in packet #2, the client responds to the server's sequence number of zero with an acknowledgement number of 1. The client includes its own sequence number of 1 (incremented from zero because of the SYN).</p>
+<p>At this point, the sequence number for both hosts is 1. This initial increment of 1 on both hosts' sequence numbers occurs during the establishment of all TCP sessions.</p>
+<h4>Packet #4</h4>
+<p>This is the first packet in the stream which carries an actual payload (specifically, the client's HTTP request). The sequence number is left at 1, since no data has been transmitted since the last packet in this stream. The acknowledgement number is also left at 1, since no data has been received from the server, either.</p>
+<p>Note that this packet's payload is 725 bytes in length.</p>
+<h4>Packet #5</h4>
+<p>This packet is sent by the server solely to acknowledge the data sent by the client in packet #4 while upper layers process the HTTP request. Notice that the acknowledgement number has increased by 725 (the length of the payload in packet #4) to 726; e.g., "I have received 726 bytes so far." The server's sequence number remains at 1.</p>
+<h4>Packet #6</h4>
+<p>This packet marks the beginning of the server's HTTP response. Its sequence number is still 1, since none of its packets prior to this one have carried a payload. This packet carries a payload of 1448 bytes.</p>
+<h4>Packet #7</h4>
+<p>The sequence number of the client has been increased to 726 because of the last packet it sent. Having received 1448 bytes of data from the server, the client increases its acknowledgement number from 1 to 1449.</p>
+<p>For the majority of the capture, we will see this cycle repeat. The client's sequence number will remain steady at 726, because it has no data to transmit beyond the initial 725 byte request. The server's sequence number, in contrast, continues to grow as it sends more segments of the HTTP response.</p>
+<h3>Tear-down</h3>
+<h4>Packet #38</h4>
+<p>After acknowledging the last segment of data from the server, the client processes the HTTP response as a whole and decides no further communication is needed. Packet #38 is sent by the client with the FIN flag set. Its acknowledgement number remains the same as in the prior packet (#37).</p>
+<h4>Packet #39</h4>
+<p>The server acknowledges the client's desire to terminate the connection by increasing the acknowledgement number by one (similar to what was done in packet #2 to acknowledge the SYN flag) and setting the FIN flag as well.</p>
+<h4>Packet #40</h4>
+<p>The client sends its final sequence number of 727, and acknowledges the server's FIN packet by incrementing the acknowledgement number by 1 to 22952.</p>
+<p>At this point, both hosts have terminated the session and can release the software resources dedicated to its maintenance.</p></div>
+</div>
+
+
+
+
+  <div class="well">
+    
+      <div class="pull-right">
+        <a href="http://packetlife.net/users/stretch/"><img src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/tn_stretch.jpg" class="img-thumbnail"></a>
+      </div>
+    
+    <h3>About the Author</h3>
+    <p>Jeremy Stretch is a network engineer living in the Raleigh-Durham, North Carolina area. He is known for his blog and cheat sheets here at Packet Life. You can reach him by <a href="http://packetlife.net/contact/">email</a> or follow him on <a href="http://twitter.com/packetlife">Twitter</a>.</p>
+  </div>
+
+
+<div class="text-right">
+  <p class="text-muted">Posted in <a href="http://packetlife.net/blog/category/packet-analysis/">Packet Analysis</a></p>
+</div>
+
+<div class="text-center">
+  <a href="https://m.do.co/c/e09ceb441271"><img src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/ssd-virtual-servers-banner-468x60.jpg" width="468" height="60" class="center-block"></a>
+</div>
+
+
+<a name="comments"></a>
+<h4 class="text-center text-muted">Comments</h4>
+<hr>
+
+  
+
+<a name="c2782"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://hype-free.blogspot.com/">
+      <strong>Cd-MaN</strong> (guest)
+      </a>
+    <br>
+    <small class="text-muted">June 7, 2010 at 4:39 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Fun fact: the 3-way hanshake can be in fact a four way handshake - see here (although I don't believe that it is implemented like that anywhere):</p>
+<p><a href="http://www.breakingpointsystems.com/community/blog/tcp-portals-the-handshakes-a-lie/">http://www.breakingpointsystems.com/community/blog/tcp-portals-the-handshakes-a-lie/</a></p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c2784"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://packetlife.net/users/eaadams/" rel="nofollow"><strong>eaadams</strong></a>
+    <br>
+    <small class="text-muted">June 7, 2010 at 8:38 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Great stuff Jeremy! Excellent explanation of TCP operation PLUS how to use Wireshark features to examine and learn about how a protocol works. Expect a flood of hits from my students!</p>
+<p>Aubrey</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c2786"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Mimo</strong> (guest)
+      
+    <br>
+    <small class="text-muted">June 7, 2010 at 3:27 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Hi Jeremy, </p>
+<p>Great article. </p>
+<p>When I studied TCP first, I was thought that ack no. is the next byte receiver is expecting.  i.e if ack no. is 726 that means, receiver received 725 bytes of data and sender can send data starting from 726th byte. </p>
+<p>So to me this sentence doesn't make much sense: </p>
+<p>"Notice that the acknowledgment number has been increased by 1 although no payload data has yet been sent by the client. This is because the presence of the SYN or FIN flag in a received packet triggers an increase of 1 in the sequence."</p>
+<p>As it seems to me that is is expecting data stream starting from byte 1. So Ack no. is not increased.</p>
+<p>Though the meaning is same.</p>
+<p>PS: Thank you for the demo of ability of wireshark. I still don't know much abt this tool.</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c2787"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://packetlife.net/users/stretch/" rel="nofollow"><strong>stretch</strong></a>
+    <br>
+    <small class="text-muted">June 7, 2010 at 5:02 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>@Mimo: In this instance, as is typical with network protocols in general, our counter is <em>zero-indexed</em>; the first byte is byte 0, not byte 1. the SYN flag increases the counter by one to 1, which is actually the second possible value.</p>
+<p>Hope that helps.</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c2789"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>yohan900</strong> (guest)
+      
+    <br>
+    <small class="text-muted">June 8, 2010 at 12:13 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Mimo, you are correct.  Do a search on google for TCP phantom byte and that will explain why there is an increment of 1 in the setup and teardown processes.</p>
+<p>Also check out Laura Chappells WireShark training, good stuff.</p>
+<p>http://support.novell.com/techcenter/articles/nc2001_05e.html</p>
+<p>Note. During the TCP startup and teardown sequence, a "phantom byte" causes the sequence number and acknowledgment number fields to increment by 1 even though no data is exchanged. This phantom byte can be confusing when you have just learned that the sequence number field increments only when data is sent.</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c2790"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://www.arkf.net/blog/">
+      <strong>tormentum</strong> (guest)
+      </a>
+    <br>
+    <small class="text-muted">June 8, 2010 at 12:51 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>G'day,</p>
+<p>Great post!  I've just recently started down the road to CCNA having always been interested in networking.  I've used wireshark in the past for very basic troubleshooting, but this is a nice deep (comparitivley speaking!) look at TCP.<br></p>
+<p>One question:  packet 36 contains a PSH or push flag.  What is this in relation to the HTTP stream?</p>
+<p>Cheers,<br>
+Adam.</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c2792"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Mimo</strong> (guest)
+      
+    <br>
+    <small class="text-muted">June 8, 2010 at 3:00 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Thank you yohan900 and stretch for the information!! </p>
+<p>@ tormentum<br><a href="http://support.microsoft.com/kb/169292">http://support.microsoft.com/kb/169292</a><br>
+If the PUSH bit set, data will be delivered up to the application right away, but the ack may still be delayed. </p>
+<p>Hope this helps....</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c2794"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Daren</strong> (guest)
+      
+    <br>
+    <small class="text-muted">June 9, 2010 at 7:49 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>What a bit of luck!!!  I have a second-stage telephone interview today and one of the subjects I will be tested on is TCP.  The first interview covered it in a little detail (3-way handshake / sliding window) but this one today will delve further into it.  This will help enormously - thank you very much Jeremy.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c2796"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Ned</strong> (guest)
+      
+    <br>
+    <small class="text-muted">June 9, 2010 at 7:01 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Hi Jeremy, Nice Article. Thx for posting. If you get a chance can you continue on in this series and dive deeper into TCP with regards to the various algorithms like slow start and other concepts like windowing, congestion control, PAWS, Reno, SACKs etc. Tx</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c2797"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://packetlife.net/users/AaronDhiman/" rel="nofollow"><strong>AaronDhiman</strong></a>
+    <br>
+    <small class="text-muted">June 9, 2010 at 7:21 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Awesome Article!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c2804"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Dano</strong> (guest)
+      
+    <br>
+    <small class="text-muted">June 10, 2010 at 6:18 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>It would have been much better to call this a "Three-step handshake" or "Three-phase handshake".  To me, "Three-way handshake" implies that here are three different parties shaking hands when in fact it is a method that requires three steps for two parties to communicate.</p>
+<p>Just an observation . . </p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c2819"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://packetlife.net/users/ecbanks/" rel="nofollow"><strong>ecbanks</strong></a>
+    <br>
+    <small class="text-muted">June 17, 2010 at 1:38 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Succinct explanation.  Helped straighten this out in my head.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c2869"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://raylook.blogspot.com/">
+      <strong>raylook</strong> (guest)
+      </a>
+    <br>
+    <small class="text-muted">July 1, 2010 at 3:21 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>great article , thanks ;)</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c3519"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Angelo</strong> (guest)
+      
+    <br>
+    <small class="text-muted">November 20, 2010 at 6:39 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Hi, 
+So if client is sending a data over different TCP segments the acknowledge number on client side will not increase untill all the data has been sent over..???</p>
+<p>I have a client which sends data to server and when I capture it I see the data is not in single IP datagram but I see that the whole data sent to server spans over multiple TCP segments and in Two IP datagrams. </p>
+<p>My questions is if I need to collect all the data sent by client to server how do I reassemble them at TCP lever. I am capturing IP packets which encapsulates TCP....</p>
+<p>Thanks,<br>
+Angelo</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c3598"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://studyhacktivism.blogspot.com/">
+      <strong>natraj</strong> (guest)
+      </a>
+    <br>
+    <small class="text-muted">December 9, 2010 at 12:34 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Hi,<br>
+This is good stuff, but why didn't u talk about packet#36 and packet#37? If those are also added to this article, then this will be more useful for beginners. </p>
+<p>Thanks,</p>
+<p>Natraj. </p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c4440"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Wajih</strong> (guest)
+      
+    <br>
+    <small class="text-muted">May 30, 2011 at 5:05 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thanks indeed. God bless you!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c4459"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Taki</strong> (guest)
+      
+    <br>
+    <small class="text-muted">June 4, 2011 at 6:19 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Good tutorial, many thanks for it.</p>
+<p>Why does wireshark keep displaying len=0 for each tcp segment ?</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c4470"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Himanshu</strong> (guest)
+      
+    <br>
+    <small class="text-muted">June 8, 2011 at 8:10 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Itz really a nice work .<br>Good help for beginners.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c4670"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>matti</strong> (guest)
+      
+    <br>
+    <small class="text-muted">July 29, 2011 at 8:20 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>A good explanation on TCP basics. Your decision to use relative numbers is clear, but I always tend to stick with actual numbers in the 3-way handshake part. This is to emphasize my students that both ends use their own, independent seq numbers that gets increased while data flow goes on. It's easy to mix them when both start from zero, as is the case with wireshark using relative seq numbers. </p>
+<p>Keep up the good work!</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c4919"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Vijay </strong> (guest)
+      
+    <br>
+    <small class="text-muted">October 11, 2011 at 5:05 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Great Explanation !!! It cleared most of the doubts that I had. </p>
+<p>Earlier my assumption was the sequence number would be sequential and I did not know that Acknowledgement was related to the amount of bytes transferred. But you made it clear. Thanks a lot.</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c4952"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://www.mkriesten.de/">
+      <strong>mkriesten</strong> (guest)
+      </a>
+    <br>
+    <small class="text-muted">October 27, 2011 at 11:18 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Excellent explanation. This article is a wonderful piece for educational purposes. Stumbled upon it yesterday while talking about TCP with one of my younger colleagues.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5002"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>jrreyes</strong> (guest)
+      
+    <br>
+    <small class="text-muted">November 29, 2011 at 11:37 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Very clearly explained. Thank you !!!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5017"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>leffe</strong> (guest)
+      
+    <br>
+    <small class="text-muted">December 9, 2011 at 9:06 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you for this great explanation!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5028"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      A guest
+      
+    <br>
+    <small class="text-muted">December 20, 2011 at 11:20 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Very good explained. Thanks a lot. Guys like you makes life easier for us.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5113"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Amit Gupta</strong> (guest)
+      
+    <br>
+    <small class="text-muted">January 27, 2012 at 4:27 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Excellent explanation. I was just hunting for this type of explanation on the complete cycle of TCP packet. Got more interest after reading this article.</p>
+<p>Thank you very much Jeremy. </p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5255"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://packetlife.net/users/kr105/" rel="nofollow"><strong>kr105</strong></a>
+    <br>
+    <small class="text-muted">March 24, 2012 at 8:12 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Awesome, thank you!!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5349"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>mani</strong> (guest)
+      
+    <br>
+    <small class="text-muted">April 27, 2012 at 8:00 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>its awesome man its great effort i really appreciate it good work it is very helpful   for beginners</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5446"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Zeo</strong> (guest)
+      
+    <br>
+    <small class="text-muted">May 16, 2012 at 5:31 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Thank you Jeremy it is a great article!</p>
+<p>Looking at the connection termination:</p>
+<p>"The server acknowledges the client's desire to terminate the connection by increasing the acknowledgement number by one (similar to what was done in packet #2 to acknowledge the SYN flag) and setting the FIN flag as well."</p>
+<p>Please share your thoughts on this because I thought that the ACK and FIN can not be combined in the same segment because the the server might still be processing a transaction and not ready to close yet so it waits until it finishes processing those transactions before setting FIN flag.  Thus it is a  way hand shake when tearing down a connection. </p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5456"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Joe</strong> (guest)
+      
+    <br>
+    <small class="text-muted">May 21, 2012 at 7:02 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Wow, I've been looking for a simple explanation like this for the last week, thank you so much!!!!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5458"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Mitchell</strong> (guest)
+      
+    <br>
+    <small class="text-muted">May 23, 2012 at 3:17 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Hi, thanks for this great tutorial, have an exam in a few days and this had made things a lot clearer although realy, I didn't need to go this much is depth.</p>
+<p>Thank you.</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5475"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://www.jamesgoulding.com/">
+      <strong>James Goulding</strong> (guest)
+      </a>
+    <br>
+    <small class="text-muted">May 29, 2012 at 12:01 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>After a zillion sites I finally understand the concept of ACK numbers. Your step by step break down of the diagram was key for me. Note: I'm going to a very well-known University and none of their material explains this concept like you have done. </p>
+<p>The following was what did it for me: <br>"Packet #: 7 The sequence number of the client has been increased to 726 because of the last packet it sent. Having received 1448 bytes of data from the server, the client increases its acknowledgement number from 1 to 1449.</p>
+<p>For the majority of the capture, we will see this cycle repeat. The client's sequence number will remain steady at 726, because it has no data to transmit beyond the initial 725 byte request. The server's sequence number, in contrast, continues to grow as it sends more segments of the HTTP response." </p>
+<p>I realized that the server could send more than the client requested. We were asked to break down 8 packets into a diagram and explain their movements, in Wireshark, with several criteria. In ALL of their examples the server NEVER sent more data. After 3 hours I was ready to blow. </p>
+<p>Thanks for your posting. </p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5568"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Student</strong> (guest)
+      
+    <br>
+    <small class="text-muted">July 2, 2012 at 1:41 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you for the explanation and visuals on WireShark!  Made understanding TCP/IP a lot easier!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5608"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Heshan</strong> (guest)
+      
+    <br>
+    <small class="text-muted">July 20, 2012 at 10:51 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you very much! A great explanation.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5618"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      A guest
+      
+    <br>
+    <small class="text-muted">July 30, 2012 at 1:58 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thanks, It was very useful for me.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5627"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Novin Mathew</strong> (guest)
+      
+    <br>
+    <small class="text-muted">August 3, 2012 at 1:17 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Jeremy, Good one! A quick insight into few important TCP/IP internals. Really helpful.<br>Cheers, Novin</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5651"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Ondrej</strong> (guest)
+      
+    <br>
+    <small class="text-muted">August 26, 2012 at 11:09 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Amazing, thank you so much. I've been looking for explanation like this for ages. Cool stuff, keep up on your great work!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5652"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Suryakanta Mandal</strong> (guest)
+      
+    <br>
+    <small class="text-muted">August 27, 2012 at 8:53 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Great stuff Explained very well</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5717"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Mohsen</strong> (guest)
+      
+    <br>
+    <small class="text-muted">September 17, 2012 at 3:23 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Thanks, this gives an intuitive understanding of TCP/IP.</p>
+<p>Thanks<br>Regards<br>Mohsen hs</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5718"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>sam</strong> (guest)
+      
+    <br>
+    <small class="text-muted">September 17, 2012 at 4:24 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Wonderful information, Thanks</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5721"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>SteveO</strong> (guest)
+      
+    <br>
+    <small class="text-muted">September 19, 2012 at 1:51 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Difficult to find a document like this. Cisco needs to hire you to write this in their books! This will always help me and others. </p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5749"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Rohit</strong> (guest)
+      
+    <br>
+    <small class="text-muted">October 11, 2012 at 10:44 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you very much....</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5752"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://www.facebook.com/jatinkhuranna">
+      <strong>jatin</strong> (guest)
+      </a>
+    <br>
+    <small class="text-muted">October 14, 2012 at 12:00 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Thank you so much for providing the knowledge about TCP. <br>this is really helpful and much more deep than i expected.</p>
+<p>cheers <br>jatin.</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5811"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>yared</strong> (guest)
+      
+    <br>
+    <small class="text-muted">November 2, 2012 at 2:49 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you very much about Jeremy for your detailed explanation .you make me fell confident for my mid term exam</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5813"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Msurni</strong> (guest)
+      
+    <br>
+    <small class="text-muted">November 5, 2012 at 8:21 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Very nice article....<br>How do we indicate that this is the last chunk in the streaming? do we need to send rn in the last data chunk or how?</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5820"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Koop</strong> (guest)
+      
+    <br>
+    <small class="text-muted">November 6, 2012 at 1:08 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>I learned that ACK number was "bytes sent + 1", but here we have ACK number = "bytes sent". (Indeed the three way handshake show seq = 1 (byte))</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5887"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>BigB</strong> (guest)
+      
+    <br>
+    <small class="text-muted">December 10, 2012 at 4:40 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Explained very clearly and thoroughly, thanks!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5888"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Balaji</strong> (guest)
+      
+    <br>
+    <small class="text-muted">December 11, 2012 at 4:11 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thanks :) It was really helpful</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c5992"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>shady</strong> (guest)
+      
+    <br>
+    <small class="text-muted">January 28, 2013 at 11:52 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thanks, this helped.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6048"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://packetlife.net/users/hatcreek/" rel="nofollow"><strong>hatcreek</strong></a>
+    <br>
+    <small class="text-muted">February 23, 2013 at 8:50 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>This made it much clearer for me, thank you.<br>How's the Lab coming? Hope your having a good 2013.</p>
+<p>-Hatcreek</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6051"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Vince</strong> (guest)
+      
+    <br>
+    <small class="text-muted">February 24, 2013 at 7:30 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>It's the first post / article I've read about the subject that is clear and understandable. <br></p>
+<p>Thanks</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6101"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Askar</strong> (guest)
+      
+    <br>
+    <small class="text-muted">March 12, 2013 at 10:24 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you very nice and informative, keep the good work.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6103"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Vitor</strong> (guest)
+      
+    <br>
+    <small class="text-muted">March 13, 2013 at 5:38 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Anothre great article, Jeremy! Realy thnks for that. U can explain in plain english 'complicated' (or not so understand things)</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6149"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>sameer</strong> (guest)
+      
+    <br>
+    <small class="text-muted">March 25, 2013 at 10:03 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thanks for the detailed article.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6157"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Zaygham</strong> (guest)
+      
+    <br>
+    <small class="text-muted">March 27, 2013 at 2:41 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>What is the rational for having a random assignment of sequence number at the start of a TCP session. It should always start with zero</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6163"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="https://twitter.com/world_explore">
+      <strong>Christopher</strong> (guest)
+      </a>
+    <br>
+    <small class="text-muted">March 29, 2013 at 3:10 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Your explanation is very helpful!Thanks a lot!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6179"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>laud</strong> (guest)
+      
+    <br>
+    <small class="text-muted">April 3, 2013 at 12:09 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you, this is really a great article. It definitely halped preparing my Network exam :)</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6228"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>golha</strong> (guest)
+      
+    <br>
+    <small class="text-muted">April 23, 2013 at 5:32 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Very helpful! tnx.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6268"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Kishore</strong> (guest)
+      
+    <br>
+    <small class="text-muted">May 3, 2013 at 2:56 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Great article indeed Jeremy. Good explanation of TCP negotiations. I know about the TCP handshakes but not to such extent. Thanks for the wonderful explanation.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6308"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>nocomment</strong> (guest)
+      
+    <br>
+    <small class="text-muted">May 17, 2013 at 11:35 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>excellent !!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6426"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Thyag</strong> (guest)
+      
+    <br>
+    <small class="text-muted">July 25, 2013 at 8:25 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Jeremy, </p>
+<p>You simply rock dude lml !</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6433"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>ROHIT</strong> (guest)
+      
+    <br>
+    <small class="text-muted">July 27, 2013 at 10:21 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Nice</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6466"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://haridas.in/">
+      <strong>Haridas N</strong> (guest)
+      </a>
+    <br>
+    <small class="text-muted">August 8, 2013 at 7:11 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Hi,</p>
+<p>Your blog entries are very clear and clears the basic concepts going under these complex protocols. Thanks for the good explanation, this helped me to concrete my idea about how the TCP communication works.</p>
+<p>Warm Regards,<br>Haridas N.</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6503"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Guest</strong> (guest)
+      
+    <br>
+    <small class="text-muted">August 25, 2013 at 9:33 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Hi, thanks a lot, nice post.</p>
+<p>BTW Professor Philip Levis in the "Introduction to Networking" Fall 2012 Stanford Online course explains (Week 3, Tcp Header lecture) that the TCP ack number is the last received byte PLUS ONE, that is refers to the next byte that one wants to accept, not the last byte received.</p>
+<p>Kind of helps to grasp the counts.</p>
+<p>Keep up the good work,<br>Guest</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6610"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Sidd</strong> (guest)
+      
+    <br>
+    <small class="text-muted">October 30, 2013 at 5:33 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Excellent post and a good challenge question :-) to post the comment... thanks </p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6642"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Satish</strong> (guest)
+      
+    <br>
+    <small class="text-muted">November 22, 2013 at 2:29 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Superb! Really nice post with a very clear explanation. Thanks for posting such an nice article.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6689"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Jesper Gustafsson</strong> (guest)
+      
+    <br>
+    <small class="text-muted">December 18, 2013 at 2:41 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Oh good lord this helped me! Cisco surely didn't do much help on this matter!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6710"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Dan B</strong> (guest)
+      
+    <br>
+    <small class="text-muted">January 3, 2014 at 8:23 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>FYI, the use of an apparently random number for the initial sequence number is not a bug in Wireshark and is a very intentional implementation detail.</p>
+<p>See http://tools.ietf.org/html/rfc1948 but, in brief, making the sequence number less predictable helps to prevent certain types of malicious attacks.</p>
+<p>See also the wiki page on TCP: http://en.wikipedia.org/wiki/Transmission_Control_Protocol#Reliable_transmission</p>
+<p>"In the first two steps of the 3-way handshake, both computers exchange an initial sequence number (ISN). This number can be arbitrary, and should in fact be unpredictable to defend against TCP sequence prediction attacks."</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6723"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>HP1</strong> (guest)
+      
+    <br>
+    <small class="text-muted">January 10, 2014 at 10:41 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Awesome stuff like always!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6756"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://packetlife.net/users/kaps16/" rel="nofollow"><strong>kaps16</strong></a>
+    <br>
+    <small class="text-muted">February 3, 2014 at 12:33 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>I didn't understand this under packet #3-</p>
+<p>At this point, the sequence number for both hosts is 1. This initial increment of 1 on both hosts' sequence numbers occurs during the establishment of all TCP sessions.</p>
+<p>I guess the SEQ # of Server is still 0.</p>
+<p>I know that in packet # 3 (from client) ACK = 1 still how does it increment the SEQ # at the server side?</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6783"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Andrew</strong> (guest)
+      
+    <br>
+    <small class="text-muted">February 19, 2014 at 3:02 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Great article!</p>
+<p>What you write about SEQ N and ACK N and how they are incremented is not written in any TCP article I read, but that's exactly how "real" TCP works!</p>
+<p>Thank you so much!!!</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6806"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>jenil </strong> (guest)
+      
+    <br>
+    <small class="text-muted">March 3, 2014 at 1:56 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>superb article!</p>
+<p>its clear your all doubt and also provides you basic ideas.<br>Thankx man</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6824"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>rj</strong> (guest)
+      
+    <br>
+    <small class="text-muted">March 19, 2014 at 7:45 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>great article &amp; superb explanation. <br>Please help me in understand this<br> - how did the client know that it is the last segment from server?<br> - is it client which always initiates the termination of connection?</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6826"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      A guest
+      
+    <br>
+    <small class="text-muted">March 20, 2014 at 9:20 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you sir for such a great article. No words to explain</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6856"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Johnny</strong> (guest)
+      
+    <br>
+    <small class="text-muted">March 31, 2014 at 11:12 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>You know that moment when something just all of a sudden makes complete sense? Yeah, reading this article gave me that moment! </p>
+<p>Thank you! </p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6993"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Kishore </strong> (guest)
+      
+    <br>
+    <small class="text-muted">May 21, 2014 at 4:44 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Great write-up! </p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6995"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Kanishk</strong> (guest)
+      
+    <br>
+    <small class="text-muted">May 23, 2014 at 6:36 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Great help!!! :) Thanks man....</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c6998"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>09127</strong> (guest)
+      
+    <br>
+    <small class="text-muted">May 28, 2014 at 6:38 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you a lot for this guide: it was really useful both to learn more about how TCP works and about Wireshark.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7034"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Francisco Zanatta</strong> (guest)
+      
+    <br>
+    <small class="text-muted">June 12, 2014 at 5:37 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Very useful article, specially because it uses Wireshark screencaptures and shows the real thing happening. Very useful.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7048"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Sumsam Ali</strong> (guest)
+      
+    <br>
+    <small class="text-muted">June 22, 2014 at 9:19 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Great explanation.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7050"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>naveen</strong> (guest)
+      
+    <br>
+    <small class="text-muted">June 24, 2014 at 4:34 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Loved the explanation from Author. This is what i was searching for. Nice work Jeremy. Keep sharing. :)</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7090"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Maks</strong> (guest)
+      
+    <br>
+    <small class="text-muted">July 2, 2014 at 8:52 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thanks a lot , now it really become clear </p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7102"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Noel</strong> (guest)
+      
+    <br>
+    <small class="text-muted">July 5, 2014 at 2:44 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thanks for the useful information, I've just started reading it but it already answered some of the question marks on my head. I want to thank you for your easy to understand approach about this complicated world of TCP/IP. Kudos to the team. thanks</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7106"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Diego</strong> (guest)
+      
+    <br>
+    <small class="text-muted">July 6, 2014 at 4:53 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thanks a lot for taking the time to do this !! It really help catching up really fast :)</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7179"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="https://twitter.com/Blacklotusi">
+      <strong>blacklotus</strong> (guest)
+      </a>
+    <br>
+    <small class="text-muted">August 3, 2014 at 10:12 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thanks a ton - super helpful.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7327"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Mudit</strong> (guest)
+      
+    <br>
+    <small class="text-muted">October 1, 2014 at 9:50 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Great Article.
+Thanks :)</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7343"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Dave</strong> (guest)
+      
+    <br>
+    <small class="text-muted">October 3, 2014 at 9:47 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Nice stuff!</p>
+<p>Can someone explain why in the packet #4 (HTTP GET) the sender has the ACK flag bit ON. Is that mandatory? I have noticed the same for the packet #38. I have been trying to find a reference on how mandatory the ACK flag is but can't find.</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7357"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Harpreet Singh</strong> (guest)
+      
+    <br>
+    <small class="text-muted">October 16, 2014 at 11:56 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Essential and complete. Thanks!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7378"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>NN</strong> (guest)
+      
+    <br>
+    <small class="text-muted">October 27, 2014 at 10:20 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Thank you Jeremy for this blog, it's value won't be deprecated as long as TCP protocol is used. </p>
+<p>Doubt: You mentioned that if the SYN/FIN bit is set in the received packet, the outgoing Ack no will be +1. I don't understand the statement in tear down process "acknowledges the server's FIN packet by incrementing the acknowledgement number by 1 to 22952" why is there a random increment of the last packet? Or Did i miss something?</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7453"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Phil Kim</strong> (guest)
+      
+    <br>
+    <small class="text-muted">December 3, 2014 at 1:37 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Is it possible to make an application to send packets with same sequence number for just health checking?</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7455"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Sofía</strong> (guest)
+      
+    <br>
+    <small class="text-muted">December 3, 2014 at 8:32 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you so muuuuuuuch!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7461"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>AlexTee</strong> (guest)
+      
+    <br>
+    <small class="text-muted">December 5, 2014 at 4:59 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Thanks for another great article.</p>
+<p>I'd like to note, that some Cisco books explain Ack number a bit differently. In particular, Doyle's Routing TCP/IP states following:</p>
+<p>"Acknowledgment Number is a 32-bit ﬁeld that identiﬁes the sequence number the source next expects to receive from the destination. If a host receives an acknowledgment number that does not match the next sequence number it intends to send (or has sent), it knows that packets have been lost."</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7539"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Miljana</strong> (guest)
+      
+    <br>
+    <small class="text-muted">January 30, 2015 at 2:31 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you Jeremy, this is really fantastic explanation. :) </p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7625"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>tacy</strong> (guest)
+      
+    <br>
+    <small class="text-muted">March 19, 2015 at 3:49 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Awesome, thanks Jeremy</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7638"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Harsha</strong> (guest)
+      
+    <br>
+    <small class="text-muted">March 27, 2015 at 10:22 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>fantastic explanation! </p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7694"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>chethan</strong> (guest)
+      
+    <br>
+    <small class="text-muted">May 20, 2015 at 2:03 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Very informative.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7710"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Alfredo</strong> (guest)
+      
+    <br>
+    <small class="text-muted">May 31, 2015 at 10:23 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you! Excellent explanation!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7723"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Viet</strong> (guest)
+      
+    <br>
+    <small class="text-muted">June 5, 2015 at 6:32 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Good stuff, refresh my knowledge</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7737"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://packetlife.net/users/kooth/" rel="nofollow"><strong>kooth</strong></a>
+    <br>
+    <small class="text-muted">June 10, 2015 at 2:46 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>This was quite helpful!  I'm a developer and thought I knew all I needed to know about packet analysis -- boy was I wrong!  After reading this post, I immediately signed up!</p>
+<p>Thanks so much for sharing your knowledge!</p>
+<p>Sincerely,
+Keith E. Cooper
+Tampa, FL.</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7784"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Allan</strong> (guest)
+      
+    <br>
+    <small class="text-muted">July 4, 2015 at 11:46 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Hi,
+Is there any way I can compare tcp packet payload with the memory. Please help. Thank.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7803"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      A guest
+      
+    <br>
+    <small class="text-muted">July 17, 2015 at 11:09 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Why thee HTTP Response is shown as TCP and not HTTP on Wireshark? Does anyone know?</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7819"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Henrik</strong> (guest)
+      
+    <br>
+    <small class="text-muted">July 31, 2015 at 12:36 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Kudos on the explanation from someone who is really new to the TCP protocol.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7863"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>chaoticflanagan</strong> (guest)
+      
+    <br>
+    <small class="text-muted">August 28, 2015 at 5:03 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Maybe i'm just missing something, but why does the sequence number change so much, fluctuating up and down? </p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7867"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Todd</strong> (guest)
+      
+    <br>
+    <small class="text-muted">September 1, 2015 at 9:54 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Another explanation comes from Richard Stevens' TCP/IP Illustrated vol. 2:  (slightly paraphrased):</p>
+<hr><p>Every byte of data exchanged across a TCP connection, along with the SYN and FIN flags, is assigned a seq. #.  The seq # in a packet contains the number of the first byte in the seqment, which may be zero if the relative seq # starts at zero.</p>
+<p>The ack # contains the next seq # the sender of the ack expects to receive, thus acknowledging all data up to the ack # minus 1.  Thus, the ack # is the next seq # expected by the sender of the ack.  The ack # is valid only if the ACK flag is set in the header.</p>
+<hr><p>I believe the inclusion of the SYN/FIN flags explains the "phantom byte" discussed elsewhere.</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7870"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Pablo</strong> (guest)
+      
+    <br>
+    <small class="text-muted">September 6, 2015 at 6:22 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Great work¡ I am trying to understand TCP in a better way, so thank you very much¡¡</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7874"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Russoue</strong> (guest)
+      
+    <br>
+    <small class="text-muted">September 9, 2015 at 9:12 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Great tutorial! Thanks.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7876"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Ali</strong> (guest)
+      
+    <br>
+    <small class="text-muted">September 13, 2015 at 2:45 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Very helpful .Thank you </p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7897"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Markus</strong> (guest)
+      
+    <br>
+    <small class="text-muted">October 1, 2015 at 9:40 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Excellent article! This really helped me refreshing my tcp knowledge for analysis!</p>
+<p>If you need an idea for a new article, how about the SSL handshake explained in the flow chart? :)</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7921"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Jason</strong> (guest)
+      
+    <br>
+    <small class="text-muted">October 23, 2015 at 5:45 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>@chaoticflanagan:
+The sequence numbers are not fluctuating; there are two sets of sequence numbers, one for each direction.  The Server and the Client each hace their own sequence number count incrementing as they send data. You must observe the direction of the arrows in this flowgraph.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c7935"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>alma</strong> (guest)
+      
+    <br>
+    <small class="text-muted">October 30, 2015 at 8:42 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you sir, a very good tutorial</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c8009"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Nilesh</strong> (guest)
+      
+    <br>
+    <small class="text-muted">December 12, 2015 at 2:31 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Great Explanation for TCP packet.</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c8024"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Bincy</strong> (guest)
+      
+    <br>
+    <small class="text-muted">December 25, 2015 at 4:55 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Amazing article :)</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c8052"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Ming</strong> (guest)
+      
+    <br>
+    <small class="text-muted">January 20, 2016 at 2:47 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Many thanks for the clear explanation of TCP stream. Make the TCP much less mysterious!!!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c8072"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="https://twitter.com/giri_gb">
+      <strong>Giri</strong> (guest)
+      </a>
+    <br>
+    <small class="text-muted">January 27, 2016 at 3:51 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Excellent explanation! I am wiser now. Cleared all my doubts, and now I can finish my assignment. Thank You!</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c8091"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://firmware-dev.blogspot.in/">
+      <strong>Devendra Gupta</strong> (guest)
+      </a>
+    <br>
+    <small class="text-muted">February 6, 2016 at 1:24 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <div><p>Hi,
+Thanks for the post. I was wondering that in stop and wait the sequence number is one bit. Does this mean that out of 32 bit we only use one bit and rest 31 bits are useless. And we toggle this one bit sequence number from 0 to 1 and vice versa. If this is not true where does this one bit sequence number fits in the protocol itself.</p>
+<p>Thanks for clearing my doubts in advance</p></div>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c8114"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Ajo</strong> (guest)
+      
+    <br>
+    <small class="text-muted">February 25, 2016 at 6:26 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Thank you ! Well explained :)</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c8152"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Mayank</strong> (guest)
+      
+    <br>
+    <small class="text-muted">March 16, 2016 at 11:12 p.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Great Job man..!!
+Thanks</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c8153"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      <a href="http://packetlife.net/users/jessicaParker/" rel="nofollow"><strong>jessicaParker</strong></a>
+    <br>
+    <small class="text-muted">March 17, 2016 at 12:20 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>hey Stretch, great info on here, just wanted to see what you thought about analyzing tcp using netflow? according to this article http://www.pcwdld.com/what-is-netflow , netflow is an IP flow export protocol, but many folks are using it to manage and monitor network influx, usage and more? what are you thoughts, i'm considering downloading a netflow analyzer to test it out more, but just wondering if it would catch a TCP sequence as well? thx</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c8165"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Vinay</strong> (guest)
+      
+    <br>
+    <small class="text-muted">March 21, 2016 at 2:54 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Does the server send 200OK only after sending all bits of the huge file requested by client?
+or Does the server send a 200OK as soon as it receives the GET from the client ?</p>
+    
+    <hr>
+  </div>
+</div>
+
+
+
+  
+
+<a name="c8235"></a>
+<div class="row">
+  <div class="col-md-4 text-right">
+    
+      
+      <strong>Ruwan</strong> (guest)
+      
+    <br>
+    <small class="text-muted">May 3, 2016 at 8:51 a.m. UTC</small>
+  </div>
+  <div class="col-md-8">
+    <p>Excellent, I learnt alot from this article.</p>
+    
+    
+  </div>
+</div>
+
+
+
+
+
+
+  
+  <a name="add-comment"></a>
+  <p></p>
+  <form action="http://packetlife.net/blog/2010/jun/7/understanding-tcp-sequence-acknowledgment-numbers/" method="post" class="form-horizontal">
+  <input type="hidden" name="csrfmiddlewaretoken" value="A9jvLu294hzXUkMWXfyW91Dp17w1mC2m">
+  <h4 class="text-center text-muted">Leave a Comment</h4>
+  <hr>
+  
+  <div class="form-group"><label class="col-md-4 control-label">Guest name</label><div class="col-md-8"><input class="form-control" id="id_guest_name" maxlength="50" name="guest_name" placeholder="Guest name" type="text"></div></div>
+<div class="form-group"><label class="col-md-4 control-label">Guest email</label><div class="col-md-8"><input class="form-control" id="id_guest_email" maxlength="75" name="guest_email" placeholder="Guest email" title="Optional; will not be displayed publicly or given out." type="email"><span class="help-block">Optional; will not be displayed publicly or given out.</span></div></div>
+<div class="form-group"><label class="col-md-4 control-label">Guest URL</label><div class="col-md-8"><input class="form-control" id="id_guest_url" maxlength="200" name="guest_url" placeholder="Guest URL" title="&lt;strong&gt;No commercial links.&lt;/strong&gt; Only personal (e.g. blog, Twitter, or LinkedIn) and/or on-topic links, please." type="url"><span class="help-block"><strong>No commercial links.</strong> Only personal (e.g. blog, Twitter, or LinkedIn) and/or on-topic links, please.</span></div></div>
+<div class="form-group"><label class="col-md-4 control-label">Comment</label><div class="col-md-8"><textarea class="form-control" cols="40" id="id_text" name="text" placeholder="Comment" required="required" rows="10"></textarea></div></div>
+<div class="form-group"><label class="col-md-4 control-label">Challenge</label><div class="col-md-8"><input class="form-control" id="id_challenge_0" name="challenge_0" placeholder="Challenge" required="required" type="hidden" value="16559797">
+<span>The 'V' in VLAN stands for _____.</span><br>
+<input class="form-control" id="id_challenge_1" name="challenge_1" placeholder="Challenge" required="required" type="text"></div></div>
+  <div class="form-group">
+    <input type="submit" name="action" value="Save" class="btn btn-primary">
+    <input type="submit" name="action" value="Preview" class="btn btn-success">
+  </div>
+  </form>
+
+
+
+  </div>
+  <div class="col-md-2">
+  
+  </div>
+</div>
+
+      </div>
+    </div>
+    <div class="text-center">
+      <ul class="list-inline outertext" id="footernav">
+        <li><a href="http://packetlife.net/">Home</a></li>
+        <li>|</li>
+        <li><a href="http://packetlife.net/blog/">Blog</a></li>
+        <li>|</li>
+        <li><a href="http://packetlife.net/library/cheat-sheets/">Cheat Sheets</a></li>
+        <li>|</li>
+        <li><a href="http://packetlife.net/captures/">Captures</a></li>
+        <li>|</li>
+        <li><a href="http://packetlife.net/armory/">Armory</a></li>
+        <li>|</li>
+        <li><a href="http://packetlife.net/toolbox/">Toolbox</a></li>
+        <li>|</li>
+        <li><a href="http://packetlife.net/bookshelf/">Bookshelf</a></li>
+        <li>|</li>
+        <li><a href="http://packetlife.net/contact/">Contact Me</a></li>
+        <li>|</li>
+        <li><a href="http://packetlife.net/about/">About</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div id="footer">
+  <div class="container text-center small">
+    <strong>More cool stuff</strong>
+    <ul class="list-inline">
+      <li><a href="http://networking-forum.com/">networking-forum.com</a></li>
+      <li>|</li>
+      <li><a href="http://www.reddit.com/r/networking/">r/Networking</a></li>
+      <li>|</li>
+      <li><a href="http://inetpro.org/wiki/">Internetworkpro</a></li>
+      <li>|</li>
+      <li><a href="http://firewall.cx/">firewall.cx</a></li>
+      <li>|</li>
+      <li><a href="http://networkengineering.stackexchange.com/">Network Engineering @ StackExchange</a></li>
+    </ul>
+  </div>
+</div>
+<script src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/jquery.min.js"></script>
+<script src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/bootstrap.min.js"></script>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-3943290-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+<iframe id="google_osd_static_frame_8449764093022" name="google_osd_static_frame" style="display: none; width: 0px; height: 0px;" src="./Understanding TCP Sequence and Acknowledgment Numbers - PacketLife.net_files/saved_resource(1).html"></iframe></body></html>
